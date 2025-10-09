@@ -5,6 +5,7 @@ import {
   TranslationOutlined
 } from '@ant-design/icons'
 import { translationService } from '../services/translationService'
+import { useTranslation } from '../hooks/useTranslation'
 import './StructuredMessage.css'
 
 const { Text, Paragraph } = Typography
@@ -14,6 +15,7 @@ const StructuredMessage = ({ message, targetLanguage = 'ru', currentUser, users 
   const [socialLinks, setSocialLinks] = useState([])
   const [isTranslating, setIsTranslating] = useState(false)
   const [showTranslation, setShowTranslation] = useState(false)
+  const { t } = useTranslation(targetLanguage)
 
   useEffect(() => {
     if (message.senderId !== currentUser.id && message.content) {
@@ -102,7 +104,7 @@ const StructuredMessage = ({ message, targetLanguage = 'ru', currentUser, users 
               onClick={handleShowTranslation}
               loading={isTranslating}
             >
-              {showTranslation ? 'Скрыть перевод' : 'Показать перевод'}
+              {showTranslation ? t('hideTranslation') : t('showTranslation')}
             </Button>
           </div>
 
@@ -145,7 +147,7 @@ const StructuredMessage = ({ message, targetLanguage = 'ru', currentUser, users 
                     <div className="info-section">
                       <Text strong>
                         <LinkOutlined style={{ marginRight: '4px' }} />
-                        Ссылки на соцсети:
+                        {t('socialLinks')}:
                       </Text>
                       <div style={{ marginTop: '4px' }}>
                         {socialLinks.map((link, index) => (

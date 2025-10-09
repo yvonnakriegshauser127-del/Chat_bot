@@ -213,7 +213,7 @@ const ChatWindow = ({
           <Space.Compact style={{ width: '100%' }}>
             <Input
                   ref={messageInputRef}
-                  placeholder="Введите сообщение..."
+                  placeholder={t('enterMessage')}
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -247,4 +247,9 @@ const ChatWindow = ({
             />
           </Space.Compact>
             </div>
-      </di
+      </div>
+    </Content>
+  )
+}
+
+export default ChatWindow
