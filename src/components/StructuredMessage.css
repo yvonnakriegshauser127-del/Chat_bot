@@ -1,0 +1,117 @@
+.structured-message-card {
+  max-width: 100%;
+  margin: 8px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sender-info {
+  display: flex;
+  align-items: center;
+}
+
+.message-content-container {
+  display: flex;
+  gap: 16px;
+  min-height: 100px;
+}
+
+.original-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.translated-message {
+  flex: 1;
+  min-width: 0;
+  border-left: 2px solid #1890ff;
+  padding-left: 16px;
+}
+
+.message-section-header {
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.message-text {
+  background-color: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.translation-loading {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  justify-content: center;
+}
+
+.structured-content {
+  background-color: #f8f9ff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e6f7ff;
+}
+
+.translation-section {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e6f7ff;
+}
+
+.info-section {
+  margin-bottom: 12px;
+}
+
+.info-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .message-content-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .translated-message {
+    border-left: none;
+    border-top: 2px solid #1890ff;
+    padding-left: 0;
+    padding-top: 12px;
+  }
+  
+  .message-text {
+    max-height: 150px;
+  }
+}
+
+/* Стили для собственных сообщений */
+.message.sent .structured-message-card {
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.message.sent .message-text {
+  background-color: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.message.sent .structured-content {
+  background-color: #f0f9ff;
+  border-color: #bae7ff;
+}

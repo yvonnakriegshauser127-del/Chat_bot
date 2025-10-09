@@ -1,0 +1,218 @@
+export const translations = {
+  ru: {
+    // Общие
+    chats: 'Чаты',
+    searchChats: 'Поиск чатов...',
+    allChats: 'Все чаты',
+    favorites: 'Избранные',
+    unread: 'Непрочитанные',
+    archive: 'Архив',
+    online: 'Онлайн',
+    offline: 'Не в сети',
+    showTranslation: 'Показать перевод',
+    hideTranslation: 'Скрыть перевод',
+    enterMessage: 'Введите сообщение...',
+    minimize: 'Свернуть чат',
+    language: 'Язык перевода',
+    
+    // Пресеты
+    selectPreset: 'Выберите пресет',
+    addPreset: 'Добавить пресет',
+    createNewPreset: 'Создать новый пресет',
+    presetName: 'Название пресета',
+    channels: 'Каналы',
+    selectChannels: 'Выберите каналы',
+    stores: 'Магазины',
+    selectStores: 'Выберите магазины',
+    emails: 'Email адреса',
+    selectEmails: 'Выберите email адреса',
+    createPreset: 'Создать пресет',
+    cancel: 'Отмена',
+    removeFromFavorites: 'Убрать из избранных',
+    addToFavorites: 'Добавить в избранные',
+    returnFromArchive: 'Вернуть из архива',
+    moveToArchive: 'Переместить в архив',
+    
+    // Шаблоны
+    messageTemplates: 'Шаблоны сообщений',
+    addNewTemplate: 'Добавить новый шаблон',
+    templateName: 'Название шаблона',
+    templateText: 'Текст шаблона',
+    createTemplate: 'Создать шаблон',
+    viewTemplate: 'Просмотреть шаблон',
+    editTemplate: 'Редактировать шаблон',
+    deleteTemplate: 'Удалить шаблон',
+    viewTemplateTitle: 'Просмотр шаблона',
+    editTemplateTitle: 'Редактировать шаблон',
+    saveChanges: 'Сохранить изменения',
+    close: 'Закрыть',
+    deleteTemplateConfirm: 'Удалить шаблон?',
+    deleteTemplateDescription: 'Вы уверены, что хотите удалить этот шаблон?',
+    yes: 'Да',
+    no: 'Нет',
+    
+    // Группы
+    createNewGroup: 'Создать новую группу',
+    groupName: 'Название группы',
+    enterGroupName: 'Введите название группы',
+    groupAvatar: 'Аватарка группы',
+    participants: 'Участники',
+    selectUsers: 'Выберите пользователей',
+    create: 'Создать',
+    groupParticipants: 'Участники группы',
+    totalParticipants: 'Всего участников',
+    onlineCount: 'Онлайн',
+    
+    // Сообщения
+    noMessages: 'Нет сообщений',
+    originalMessage: 'Оригинальное сообщение',
+    translatedMessage: 'Переведенное сообщение',
+    socialLinks: 'Ссылки на соцсети'
+  },
+  
+  uk: {
+    // Загальні
+    chats: 'Чати',
+    searchChats: 'Пошук чатів...',
+    allChats: 'Всі чати',
+    favorites: 'Обране',
+    unread: 'Непрочитані',
+    archive: 'Архів',
+    online: 'Онлайн',
+    offline: 'Не в мережі',
+    showTranslation: 'Показати переклад',
+    hideTranslation: 'Приховати переклад',
+    enterMessage: 'Введіть повідомлення...',
+    minimize: 'Згорнути чат',
+    language: 'Мова перекладу',
+    
+    // Пресети
+    selectPreset: 'Оберіть пресет',
+    addPreset: 'Додати пресет',
+    createNewPreset: 'Створити новий пресет',
+    presetName: 'Назва пресету',
+    channels: 'Канали',
+    selectChannels: 'Оберіть канали',
+    stores: 'Магазини',
+    selectStores: 'Оберіть магазини',
+    emails: 'Email адреси',
+    selectEmails: 'Оберіть email адреси',
+    createPreset: 'Створити пресет',
+    cancel: 'Скасувати',
+    removeFromFavorites: 'Прибрати з обраного',
+    addToFavorites: 'Додати в обране',
+    returnFromArchive: 'Повернути з архіву',
+    moveToArchive: 'Перемістити в архів',
+    
+    // Шаблони
+    messageTemplates: 'Шаблони повідомлень',
+    addNewTemplate: 'Додати новий шаблон',
+    templateName: 'Назва шаблону',
+    templateText: 'Текст шаблону',
+    createTemplate: 'Створити шаблон',
+    viewTemplate: 'Переглянути шаблон',
+    editTemplate: 'Редагувати шаблон',
+    deleteTemplate: 'Видалити шаблон',
+    viewTemplateTitle: 'Перегляд шаблону',
+    editTemplateTitle: 'Редагування шаблону',
+    saveChanges: 'Зберегти зміни',
+    close: 'Закрити',
+    deleteTemplateConfirm: 'Видалити шаблон?',
+    deleteTemplateDescription: 'Ви впевнені, що хочете видалити цей шаблон?',
+    yes: 'Так',
+    no: 'Ні',
+    
+    // Групи
+    createNewGroup: 'Створити нову групу',
+    groupName: 'Назва групи',
+    enterGroupName: 'Введіть назву групи',
+    groupAvatar: 'Аватарка групи',
+    participants: 'Учасники',
+    selectUsers: 'Оберіть користувачів',
+    create: 'Створити',
+    groupParticipants: 'Учасники групи',
+    totalParticipants: 'Всього учасників',
+    onlineCount: 'Онлайн',
+    
+    // Повідомлення
+    noMessages: 'Немає повідомлень',
+    originalMessage: 'Оригінальне повідомлення',
+    translatedMessage: 'Перекладене повідомлення',
+    socialLinks: 'Посилання на соцмережі'
+  },
+  
+  en: {
+    // General
+    chats: 'Chats',
+    searchChats: 'Search chats...',
+    allChats: 'All chats',
+    favorites: 'Favorites',
+    unread: 'Unread',
+    archive: 'Archive',
+    online: 'Online',
+    offline: 'Offline',
+    showTranslation: 'Show translation',
+    hideTranslation: 'Hide translation',
+    enterMessage: 'Enter message...',
+    minimize: 'Minimize chat',
+    language: 'Translation language',
+    
+    // Presets
+    selectPreset: 'Select preset',
+    addPreset: 'Add preset',
+    createNewPreset: 'Create new preset',
+    presetName: 'Preset name',
+    channels: 'Channels',
+    selectChannels: 'Select channels',
+    stores: 'Stores',
+    selectStores: 'Select stores',
+    emails: 'Email addresses',
+    selectEmails: 'Select email addresses',
+    createPreset: 'Create preset',
+    cancel: 'Cancel',
+    removeFromFavorites: 'Remove from favorites',
+    addToFavorites: 'Add to favorites',
+    returnFromArchive: 'Return from archive',
+    moveToArchive: 'Move to archive',
+    
+    // Templates
+    messageTemplates: 'Message templates',
+    addNewTemplate: 'Add new template',
+    templateName: 'Template name',
+    templateText: 'Template text',
+    createTemplate: 'Create template',
+    viewTemplate: 'View template',
+    editTemplate: 'Edit template',
+    deleteTemplate: 'Delete template',
+    viewTemplateTitle: 'View template',
+    editTemplateTitle: 'Edit template',
+    saveChanges: 'Save changes',
+    close: 'Close',
+    deleteTemplateConfirm: 'Delete template?',
+    deleteTemplateDescription: 'Are you sure you want to delete this template?',
+    yes: 'Yes',
+    no: 'No',
+    
+    // Groups
+    createNewGroup: 'Create new group',
+    groupName: 'Group name',
+    enterGroupName: 'Enter group name',
+    groupAvatar: 'Group avatar',
+    participants: 'Participants',
+    selectUsers: 'Select users',
+    create: 'Create',
+    groupParticipants: 'Group participants',
+    totalParticipants: 'Total participants',
+    onlineCount: 'Online',
+    
+    // Messages
+    noMessages: 'No messages',
+    originalMessage: 'Original message',
+    translatedMessage: 'Translated message',
+    socialLinks: 'Social media links'
+  }
+}
+
+export const getTranslation = (key, language = 'ru') => {
+  return translations[language]?.[key] || translations.ru[key] || key
+}
