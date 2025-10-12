@@ -34,6 +34,16 @@ body {
   background: #a8a8a8;
 }
 
+/* Глобальные стили для предотвращения разбивания слов */
+* {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  -moz-hyphens: none !important;
+  -ms-hyphens: none !important;
+}
+
 /* Анимации */
 @keyframes slideIn {
   from {

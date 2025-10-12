@@ -50,6 +50,13 @@
   border: 1px solid #f0f0f0;
   max-height: 200px;
   overflow-y: auto;
+  word-wrap: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
 }
 
 .translation-loading {
@@ -106,12 +113,22 @@
 }
 
 .message.sent .message-text {
-  background-color: #1890ff;
-  color: white;
-  border-color: #1890ff;
+  background-color: rgb(255,243,213);
+  color: #333;
+  border-color: rgb(255,243,213);
 }
 
 .message.sent .structured-content {
   background-color: #f0f9ff;
   border-color: #bae7ff;
 }
+
+/* Стили для системных сообщений */
+.system-message {
+  margin: 8px 0;
+}
+
+.system-message .ant-typography {
+  margin: 0;
+}
+

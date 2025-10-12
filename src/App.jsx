@@ -6,6 +6,8 @@ import ChatWindow from './components/ChatWindow'
 import NewChatModal from './components/NewChatModal'
 import TemplatesModal from './components/TemplatesModal'
 import GroupParticipantsModal from './components/GroupParticipantsModal'
+import ForwardMessageModal from './components/ForwardMessageModal'
+import ProfileSettingsModal from './components/ProfileSettingsModal'
 import { testUsers, testTemplates, initialChats, testStores, testEmails, testPresets } from './data/testData'
 import './App.css'
 
@@ -23,10 +25,16 @@ function App() {
   const [showNewChatModal, setShowNewChatModal] = useState(false)
   const [showTemplatesModal, setShowTemplatesModal] = useState(false)
   const [showParticipantsModal, setShowParticipantsModal] = useState(false)
+  const [showForwardModal, setShowForwardModal] = useState(false)
+  const [forwardedMessage, setForwardedMessage] = useState(null)
   const [isMinimized, setIsMinimized] = useState(false)
   const [currentGroupParticipants, setCurrentGroupParticipants] = useState([])
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [activeSearchTerm, setActiveSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0)
 
-  const currentUser = { id: 1, name: 'Вы', avatar: '👤' }
+  const [currentUser, setCurrentUser] = useState({ id: 1, name: 'Вы', avatar: '👤' })
 
   // Фильтрация чатов по поиску (будет выполняться в Sidebar)
   // const filteredChats = chats.filter(chat => {
@@ -42,7 +50,7 @@ function App() {
   const currentChat = chats.find(chat => chat.id === currentChatId)
 
   // Открытие чата
-  const openChat = (chatId) => {
+  const openChat = (chatId, searchTerm = '') => {
     setCurrentChatId(chatId)
     setIsMinimized(false)
     
@@ -52,10 +60,36 @@ function App() {
         chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
       )
     )
+    
+    // Если есть поисковый запрос, находим все сообщения с этим текстом
+    if (searchTerm) {
+      setActiveSearchTerm(searchTerm)
+      const chat = chats.find(c => c.id === chatId)
+      if (chat) {
+        const searchLower = searchTerm.toLowerCase()
+        const matchingMessages = chat.messages.filter(message => 
+          message.content.toLowerCase().includes(searchLower)
+        )
+        
+        setSearchResults(matchingMessages)
+        setCurrentSearchIndex(0)
+        
+        if (matchingMessages.length > 0) {
+          // Прокручиваем к первому найденному сообщению с небольшой задержкой
+          setTimeout(() => {
+            scrollToMessage(matchingMessages[0].id)
+          }, 100)
+        }
+      }
+    } else {
+      setActiveSearchTerm('')
+      setSearchResults([])
+      setCurrentSearchIndex(0)
+    }
   }
 
   // Отправка сообщения
-  const sendMessage = (content) => {
+  const sendMessage = (content, replyTo = null) => {
     if (!content.trim() || !currentChatId) return
 
     const newMessage = {
@@ -64,7 +98,12 @@ function App() {
       senderName: currentUser.name,
       content: content.trim(),
       timestamp: new Date(),
-      read: true
+      read: true,
+      replyTo: replyTo ? {
+        messageId: replyTo.id,
+        senderName: replyTo.senderName,
+        content: replyTo.content
+      } : null
     }
 
     setChats(prevChats =>
@@ -113,6 +152,58 @@ function App() {
           ? { 
               ...chat, 
               messages: [...chat.messages, responseMessage],
+              // Увеличиваем счетчик непрочитанных только если чат не активен
+              unreadCount: chatId === currentChatId ? (chat.unreadCount || 0) : (chat.unreadCount || 0) + 1
+            }
+          : chat
+      )
+    )
+  }
+
+  // Симуляция случайных входящих сообщений в неактивные чаты
+  const simulateRandomMessages = () => {
+    const privateChats = chats.filter(chat => 
+      chat.type === 'private' && 
+      chat.id !== currentChatId && 
+      !chat.isArchived
+    )
+    
+    if (privateChats.length === 0) return
+
+    // Случайно выбираем чат для получения сообщения
+    const randomChat = privateChats[Math.floor(Math.random() * privateChats.length)]
+    const participant = users.find(u => u.id !== currentUser.id && randomChat.participants.includes(u.id))
+    
+    if (!participant) return
+
+    const randomMessages = [
+      'Привет! Как дела?',
+      'Можешь помочь с проектом?',
+      'Когда сможем встретиться?',
+      'Отправил файлы, проверь пожалуйста',
+      'Есть новости по нашему вопросу?',
+      'Спасибо за помощь!',
+      'Можешь перезвонить?',
+      'Все готово, можно начинать'
+    ]
+
+    const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)]
+    const incomingMessage = {
+      id: Date.now(),
+      senderId: participant.id,
+      senderName: participant.name,
+      content: randomMessage,
+      timestamp: new Date(),
+      read: false
+    }
+
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === randomChat.id
+          ? { 
+              ...chat, 
+              messages: [...chat.messages, incomingMessage],
+              // Увеличиваем счетчик непрочитанных, так как чат не активен
               unreadCount: (chat.unreadCount || 0) + 1
             }
           : chat
@@ -221,6 +312,14 @@ function App() {
     ))
   }
 
+  const togglePin = (chatId) => {
+    setChats(prev => prev.map(chat => 
+      chat.id === chatId 
+        ? { ...chat, isPinned: !chat.isPinned }
+        : chat
+    ))
+  }
+
   // Функции для работы с пресетами
   const createPreset = (presetData) => {
     setPresets(prev => [...prev, presetData])
@@ -248,6 +347,192 @@ function App() {
     setCurrentGroupParticipants(prev => prev.filter(id => id !== userId))
   }
 
+  // Обработка пересылки сообщения
+  const handleForwardMessage = (message) => {
+    setForwardedMessage(message)
+    setShowForwardModal(true)
+  }
+
+  // Пересылка сообщения в выбранный чат
+  const forwardMessage = (targetChatId, message) => {
+    const forwardedMessageData = {
+      id: Date.now(),
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      content: `Пересланное сообщение от ${message.senderName}: ${message.content}`,
+      timestamp: new Date(),
+      read: false,
+      forwardedFrom: {
+        messageId: message.id,
+        senderName: message.senderName,
+        originalContent: message.content,
+        originalTimestamp: message.timestamp
+      }
+    }
+
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === targetChatId
+          ? { 
+              ...chat, 
+              messages: [...chat.messages, forwardedMessageData],
+              // Увеличиваем счетчик непрочитанных только если целевой чат не активен
+              unreadCount: targetChatId === currentChatId ? (chat.unreadCount || 0) : (chat.unreadCount || 0) + 1
+            }
+          : chat
+      )
+    )
+  }
+
+  // Прокрутка к сообщению по ID
+  const scrollToMessage = (messageId) => {
+    const messageElement = document.getElementById(`message-${messageId}`)
+    if (messageElement) {
+      messageElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      })
+      // Добавляем временное выделение
+      messageElement.style.backgroundColor = '#fff2e8'
+      setTimeout(() => {
+        messageElement.style.backgroundColor = ''
+      }, 2000)
+    }
+  }
+
+  // Навигация по найденным сообщениям
+  const goToNextSearchResult = () => {
+    if (searchResults.length > 0 && currentSearchIndex < searchResults.length - 1) {
+      const nextIndex = currentSearchIndex + 1
+      setCurrentSearchIndex(nextIndex)
+      scrollToMessage(searchResults[nextIndex].id)
+    }
+  }
+
+  const goToPreviousSearchResult = () => {
+    if (searchResults.length > 0 && currentSearchIndex > 0) {
+      const prevIndex = currentSearchIndex - 1
+      setCurrentSearchIndex(prevIndex)
+      scrollToMessage(searchResults[prevIndex].id)
+    }
+  }
+
+  // Сброс поиска
+  const resetSearch = () => {
+    setActiveSearchTerm('')
+    setSearchResults([])
+    setCurrentSearchIndex(0)
+  }
+
+  // Обновление профиля пользователя
+  const updateUserProfile = (updatedProfile) => {
+    setCurrentUser(updatedProfile)
+    
+    // Обновляем имя пользователя во всех сообщениях
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.messages.some(msg => msg.senderId === currentUser.id)
+          ? {
+              ...chat,
+              messages: chat.messages.map(msg =>
+                msg.senderId === currentUser.id
+                  ? { ...msg, senderName: updatedProfile.name }
+                  : msg
+              )
+            }
+          : chat
+      )
+    )
+  }
+
+  // Добавление участников в группу
+  const addParticipantsToGroup = (participantIds) => {
+    if (!currentChatId || !participantIds.length) return
+
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === currentChatId
+          ? { 
+              ...chat, 
+              participants: [...chat.participants, ...participantIds]
+            }
+          : chat
+      )
+    )
+
+    // Добавляем системное сообщение о добавлении участников
+    const addedUsers = users.filter(user => participantIds.includes(user.id))
+    const addedUserNames = addedUsers.map(user => user.name).join(', ')
+    
+    const systemMessage = {
+      id: Date.now(),
+      senderId: 'system',
+      senderName: 'System',
+      content: `Добавлены участники: ${addedUserNames}`,
+      timestamp: new Date(),
+      read: true,
+      isSystemMessage: true
+    }
+
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === currentChatId
+          ? { 
+              ...chat, 
+              messages: [...chat.messages, systemMessage]
+            }
+          : chat
+      )
+    )
+  }
+
+  // Удаление участника из группы
+  const removeParticipantFromGroup = (chatId, participantId) => {
+    if (!chatId || !participantId) return
+
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === chatId
+          ? { 
+              ...chat, 
+              participants: chat.participants.filter(id => id !== participantId)
+            }
+          : chat
+      )
+    )
+
+    // Добавляем системное сообщение об удалении участника
+    const removedUser = users.find(user => user.id === participantId)
+    const systemMessage = {
+      id: Date.now(),
+      senderId: 'system',
+      senderName: 'System',
+      content: `Участник ${removedUser?.name || 'Неизвестный'} покинул группу`,
+      timestamp: new Date(),
+      read: true,
+      isSystemMessage: true
+    }
+
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === chatId
+          ? { 
+              ...chat, 
+              messages: [...chat.messages, systemMessage]
+            }
+          : chat
+      )
+    )
+  }
+
+  // Периодическая симуляция случайных сообщений в неактивные чаты
+  useEffect(() => {
+    const interval = setInterval(() => {
+      simulateRandomMessages()
+    }, 10000 + Math.random() * 20000) // Каждые 10-30 секунд
+
+    return () => clearInterval(interval)
+  }, [chats, currentChatId])
 
   return (
     <ConfigProvider locale={ruRU}>
@@ -258,11 +543,13 @@ function App() {
             currentChatId={currentChatId}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
+            onSearchReset={resetSearch}
             onChatSelect={openChat}
             onNewChat={() => setShowNewChatModal(true)}
             users={users}
             onToggleFavorite={toggleFavorite}
             onToggleArchive={toggleArchive}
+            onTogglePin={togglePin}
             presets={presets}
             selectedPreset={selectedPreset}
             onPresetSelect={selectPreset}
@@ -272,6 +559,8 @@ function App() {
             emails={emails}
             targetLanguage={targetLanguage}
             onLanguageChange={setTargetLanguage}
+            onShowProfileSettings={() => setShowProfileModal(true)}
+            currentUser={currentUser}
           />
         )}
 
@@ -286,6 +575,14 @@ function App() {
           onInsertTemplate={setInsertTemplateCallback}
           onShowParticipants={() => setShowParticipantsModal(true)}
           targetLanguage={targetLanguage}
+          onForwardMessage={handleForwardMessage}
+          onScrollToMessage={scrollToMessage}
+          onUpdateProfile={updateUserProfile}
+          activeSearchTerm={activeSearchTerm}
+          searchResults={searchResults}
+          currentSearchIndex={currentSearchIndex}
+          onNextSearchResult={goToNextSearchResult}
+          onPreviousSearchResult={goToPreviousSearchResult}
         />
 
         <NewChatModal
@@ -316,6 +613,31 @@ function App() {
           chat={currentChat}
           users={users}
           onClose={() => setShowParticipantsModal(false)}
+          targetLanguage={targetLanguage}
+          onAddParticipants={addParticipantsToGroup}
+          onRemoveParticipant={removeParticipantFromGroup}
+          currentUser={currentUser}
+        />
+
+        <ForwardMessageModal
+          visible={showForwardModal}
+          onClose={() => {
+            setShowForwardModal(false)
+            setForwardedMessage(null)
+          }}
+          onForward={forwardMessage}
+          chats={chats}
+          currentChatId={currentChatId}
+          forwardedMessage={forwardedMessage}
+          users={users}
+        />
+
+        <ProfileSettingsModal
+          visible={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          currentUser={currentUser}
+          onUpdateProfile={updateUserProfile}
+          targetLanguage={targetLanguage}
         />
 
       </Layout>

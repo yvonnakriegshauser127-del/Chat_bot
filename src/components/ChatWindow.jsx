@@ -18,14 +18,17 @@ import {
   PaperClipOutlined, 
   SendOutlined,
   MessageOutlined,
-  TeamOutlined
+  TeamOutlined,
+  ArrowLeftOutlined,
+  CloseOutlined,
+  UpOutlined,
+  DownOutlined
 } from '@ant-design/icons'
 import MessageList from './MessageList'
 import './ChatWindow.css'
 
 const { Content } = Layout
 const { Text } = Typography
-const { Option } = Select
 
 const ChatWindow = ({ 
   chat, 
@@ -37,9 +40,18 @@ const ChatWindow = ({
   users,
   onInsertTemplate,
   onShowParticipants,
-  targetLanguage
+  targetLanguage,
+  onForwardMessage,
+  onScrollToMessage,
+  onUpdateProfile,
+  activeSearchTerm,
+  searchResults,
+  currentSearchIndex,
+  onNextSearchResult,
+  onPreviousSearchResult
 }) => {
   const [messageInput, setMessageInput] = useState('')
+  const [replyingTo, setReplyingTo] = useState(null)
   const messageInputRef = useRef(null)
   const { t } = useTranslation(targetLanguage)
 
@@ -74,8 +86,9 @@ const ChatWindow = ({
 
   const handleSendMessage = () => {
     if (messageInput?.trim()) {
-      onSendMessage(messageInput)
+      onSendMessage(messageInput, replyingTo)
       setMessageInput('')
+      setReplyingTo(null)
     }
   }
 
@@ -86,18 +99,17 @@ const ChatWindow = ({
     }
   }
 
+  const handleCancelReply = () => {
+    setReplyingTo(null)
+  }
+
   const getChatStatus = () => {
-    if (!chat) return t('online')
+    if (!chat) return ''
     
     if (chat.type === 'private') {
-      const participant = users.find(u => u.id !== currentUser.id && chat.participants.includes(u.id))
-      return participant && participant.online ? t('online') : t('offline')
+      return ''
     } else {
-      const onlineCount = chat.participants.filter(id => {
-        const user = users.find(u => u.id === id)
-        return user && user.online
-      }).length
-      return `${onlineCount} участников онлайн`
+      return `${chat.participants.length} участников`
     }
   }
 
@@ -177,21 +189,60 @@ const ChatWindow = ({
                 level={4} 
                 style={{ 
                   margin: 0, 
-                  cursor: chat.type === 'group' ? 'pointer' : 'default'
+                  cursor: chat.type === 'group' ? 'pointer' : 'default',
+                  transition: 'color 0.2s ease'
                 }}
                 onClick={chat.type === 'group' ? onShowParticipants : undefined}
+                onMouseEnter={(e) => {
+                  if (chat.type === 'group') {
+                    e.target.style.color = '#1890ff'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (chat.type === 'group') {
+                    e.target.style.color = ''
+                  }
+                }}
               >
                 {chat.name}
               </Typography.Title>
-              <Text 
-                type={getChatStatus() === t('online') ? 'success' : 'secondary'}
-                style={{ fontSize: '12px' }}
-              >
-                {getChatStatus()}
-              </Text>
+              {getChatStatus() && (
+                <Text 
+                  type="secondary"
+                  style={{ fontSize: '12px' }}
+                >
+                  {getChatStatus()}
+                </Text>
+              )}
             </div>
           </div>
           <Space>
+            {/* Кнопки навигации по поиску */}
+            {activeSearchTerm && searchResults.length > 1 && (
+              <>
+                <Tooltip title={t('previousResult')}>
+                  <Button 
+                    type="text"
+                    icon={<UpOutlined />}
+                    onClick={onPreviousSearchResult}
+                    disabled={currentSearchIndex === 0}
+                    size="small"
+                  />
+                </Tooltip>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {currentSearchIndex + 1} / {searchResults.length}
+                </Text>
+                <Tooltip title={t('nextResult')}>
+                  <Button 
+                    type="text"
+                    icon={<DownOutlined />}
+                    onClick={onNextSearchResult}
+                    disabled={currentSearchIndex === searchResults.length - 1}
+                    size="small"
+                  />
+                </Tooltip>
+              </>
+            )}
             <Tooltip title={t('minimize')}>
               <Button 
                 type="text"
@@ -207,9 +258,57 @@ const ChatWindow = ({
           currentUser={currentUser}
           users={users}
           targetLanguage={targetLanguage}
+          onReplyToMessage={setReplyingTo}
+          onForwardMessage={onForwardMessage}
+          onScrollToMessage={onScrollToMessage}
+          activeSearchTerm={activeSearchTerm}
         />
             
             <div className="chat-input-container">
+          {/* Отображение ответа на сообщение */}
+          {replyingTo && (
+            <div style={{ 
+              padding: '8px 12px', 
+              backgroundColor: '#f8f8f8', 
+              border: '1px solid #e8e8e8',
+              borderBottom: 'none',
+              borderRadius: '6px 6px 0 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderLeft: '3px solid #ff4d4f'
+            }}>
+              <ArrowLeftOutlined style={{ color: '#ff4d4f' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  borderLeft: '2px solid #ff4d4f',
+                  paddingLeft: '8px'
+                }}>
+                  <Text style={{ fontSize: '12px', color: '#ff4d4f', fontWeight: 'bold' }}>
+                    {replyingTo.senderName}
+                  </Text>
+                  <div style={{ 
+                    fontSize: '12px', 
+                    color: '#666', 
+                    marginTop: '2px',
+                    maxWidth: '300px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {replyingTo.content}
+                  </div>
+                </div>
+              </div>
+              <Button 
+                type="text" 
+                size="small" 
+                icon={<CloseOutlined />}
+                onClick={handleCancelReply}
+                style={{ color: '#999' }}
+              />
+            </div>
+          )}
           <Space.Compact style={{ width: '100%' }}>
             <Input
                   ref={messageInputRef}

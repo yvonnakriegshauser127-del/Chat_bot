@@ -33,8 +33,8 @@
 }
 
 .message.sent .message-content {
-  background-color: #1890ff;
-  color: white;
+  background-color: rgb(255,243,213);
+  color: #333;
 }
 
 .message.received .message-content {
@@ -49,6 +49,12 @@
 }
 
 .message-text {
-  word-wrap: break-word;
+  word-wrap: break-word !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
   line-height: 1.4;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  -moz-hyphens: none !important;
+  -ms-hyphens: none !important;
 }

@@ -1,13 +1,15 @@
 export const testUsers = [
-  { id: 2, name: 'Анна Петрова', avatar: '👩', online: true },
-  { id: 3, name: 'Иван Сидоров', avatar: '👨', online: false },
-  { id: 4, name: 'Мария Козлова', avatar: '👩‍💼', online: true },
-  { id: 5, name: 'Алексей Волков', avatar: '👨‍💻', online: true },
-  { id: 6, name: 'Елена Смирнова', avatar: '👩‍🎓', online: false },
-  { id: 7, name: 'Дмитрий Новиков', avatar: '👨‍🔬', online: true },
-  { id: 8, name: 'Ольга Васильева', avatar: '👩‍🎨', online: false },
-  { id: 9, name: 'Сергей Морозов', avatar: '👨‍🚀', online: true },
-  { id: 10, name: 'Татьяна Лебедева', avatar: '👩‍⚕️', online: true }
+  { id: 2, name: 'Анна Петрова', avatar: '👩' },
+  { id: 3, name: 'Иван Сидоров', avatar: '👨' },
+  { id: 4, name: 'Мария Козлова', avatar: '👩‍💼' },
+  { id: 5, name: 'Алексей Волков', avatar: '👨‍💻' },
+  { id: 6, name: 'Елена Смирнова', avatar: '👩‍🎓' },
+  { id: 7, name: 'Дмитрий Новиков', avatar: '👨‍🔬' },
+  { id: 8, name: 'Ольга Васильева', avatar: '👩‍🎨' },
+  { id: 9, name: 'Сергей Морозов', avatar: '👨‍🚀' },
+  { id: 10, name: 'Татьяна Лебедева', avatar: '👩‍⚕️' },
+  { id: 11, name: 'Amazon Support', avatar: '🛒' },
+  { id: 12, name: 'TikTok Creator', avatar: '🎬' }
 ]
 
 export const testTemplates = [
@@ -58,6 +60,14 @@ export const testPresets = [
     stores: [1, 2, 3],
     emails: ['marketing@company.com', 'sales@company.com'],
     createdAt: new Date(Date.now() - 259200000)
+  },
+  {
+    id: 4,
+    name: 'TikTok Viral Campaign',
+    channels: ['tiktok'],
+    stores: [1, 2],
+    emails: ['marketing@company.com'],
+    createdAt: new Date(Date.now() - 345600000)
   }
 ]
 
@@ -69,6 +79,8 @@ export const initialChats = [
     participants: [1, 2],
     isFavorite: true,
     isArchived: false,
+    isPinned: false,
+    isPinned: false,
     platform: 'email',
     messages: [
       {
@@ -96,17 +108,53 @@ export const initialChats = [
         read: false
       },
       {
+        id: 5,
+        senderId: 1,
+        senderName: 'Вы',
+        content: 'Хорошо, в какое время удобно?',
+        timestamp: new Date(Date.now() - 2500000),
+        read: true,
+        replyTo: {
+          messageId: 3,
+          senderName: 'Анна Петрова',
+          content: 'Отлично! Давай встретимся завтра для обсуждения деталей'
+        }
+      },
+      {
+        id: 6,
+        senderId: 2,
+        senderName: 'Анна Петрова',
+        content: 'В 14:00 будет отлично',
+        timestamp: new Date(Date.now() - 2000000),
+        read: false,
+        replyTo: {
+          messageId: 5,
+          senderName: 'Вы',
+          content: 'Хорошо, в какое время удобно?'
+        }
+      },
+      {
         id: 4,
         senderId: 2,
         senderName: 'RJ Martinez',
         content: 'Hi, I\'m RJ Martinez, full-time Amazon Influencer with 3 + years of review work and 1,200 + product videos live across Amazon, YouTube & TikTok. I create hands-on demos, unboxings, and lifestyle scenes that answer shopper questions and nudge them to click "Add to Cart." What I deliver via Creator Connections. 60-90 s 4K review with voice-over Amazon-compliant captions & disclosures. 5-day turnaround once the sample arrives Recent wins. Pet bed demo. Grill tool review Some examples of products Simple workflow You ship a unit I film, edit, and upload we both track results in on dashboard. See my style Storefront - https://www.amazon.com/shop/printondemand-rjmartinez YouTube - https://www.youtube.com/@ltestedit89/videos TikTok - https://www.tiktok.com/@itestedit Launching a new SKU or refreshing a best-seller? Reply here and I\'ll reserve the next shoot slot for you. — RJ',
         timestamp: new Date(Date.now() - 2000000),
         read: false
+      },
+      {
+        id: 7,
+        senderId: 2,
+        senderName: 'Анна Петрова',
+        content: 'О',
+        timestamp: new Date(Date.now() - 1000000),
+        read: false
       }
     ],
     isImportant: false,
     isArchived: false,
-    unreadCount: 2
+    isPinned: false,
+    isPinned: false,
+    unreadCount: 3
   },
   {
     id: 2,
@@ -115,6 +163,7 @@ export const initialChats = [
     participants: [1, 3, 4, 5],
     isFavorite: false,
     isArchived: false,
+    isPinned: false,
     platform: 'instagram',
     messages: [
       {
@@ -144,6 +193,7 @@ export const initialChats = [
     ],
     isImportant: true,
     isArchived: false,
+    isPinned: false,
     unreadCount: 0
   },
   {
@@ -174,6 +224,7 @@ export const initialChats = [
     ],
     isImportant: false,
     isArchived: false,
+    isPinned: false,
     unreadCount: 0
   },
   {
@@ -205,6 +256,7 @@ export const initialChats = [
     participants: [1, 11],
     isFavorite: false,
     isArchived: false,
+    isPinned: false,
     platform: 'amazon',
     messages: [
       {
@@ -218,6 +270,7 @@ export const initialChats = [
     ],
     isImportant: false,
     isArchived: false,
+    isPinned: false,
     unreadCount: 1
   },
   {
@@ -227,6 +280,7 @@ export const initialChats = [
     participants: [1, 7, 8, 9],
     isFavorite: true,
     isArchived: false,
+    isPinned: false,
     platform: 'instagram',
     messages: [
       {
@@ -240,6 +294,31 @@ export const initialChats = [
     ],
     isImportant: false,
     isArchived: false,
+    isPinned: false,
     unreadCount: 0
+  },
+  {
+    id: 7,
+    name: 'TikTok Creator',
+    type: 'private',
+    participants: [1, 12],
+    isFavorite: false,
+    isArchived: false,
+    isPinned: false,
+    platform: 'tiktok',
+    messages: [
+      {
+        id: 12,
+        senderId: 12,
+        senderName: 'TikTok Creator',
+        content: 'Hey! Ready to create some viral content?',
+        timestamp: new Date(Date.now() - 600000),
+        read: false
+      }
+    ],
+    isImportant: false,
+    isArchived: false,
+    isPinned: false,
+    unreadCount: 1
   }
 ]

@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { Modal, Form, Input, Select, Tag, Space, Avatar, Button, Upload } from 'antd'
 import { UploadOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons'
 
-const { Option } = Select
 
 const NewChatModal = ({ 
   visible, 
@@ -178,7 +177,7 @@ const NewChatModal = ({
             }}
           >
             {users.map(user => (
-              <Option 
+              <Select.Option 
                 key={user.id} 
                 value={user.id}
                 style={{
@@ -191,7 +190,7 @@ const NewChatModal = ({
                   </Avatar>
                   {user.name}
                 </Space>
-              </Option>
+              </Select.Option>
             ))}
           </Select>
         </Form.Item>

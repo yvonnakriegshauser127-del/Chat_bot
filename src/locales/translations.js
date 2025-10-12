@@ -7,8 +7,6 @@ export const translations = {
     favorites: 'Избранные',
     unread: 'Непрочитанные',
     archive: 'Архив',
-    online: 'Онлайн',
-    offline: 'Не в сети',
     showTranslation: 'Показать перевод',
     hideTranslation: 'Скрыть перевод',
     enterMessage: 'Введите сообщение...',
@@ -61,13 +59,49 @@ export const translations = {
     create: 'Создать',
     groupParticipants: 'Участники группы',
     totalParticipants: 'Всего участников',
-    onlineCount: 'Онлайн',
     
     // Сообщения
     noMessages: 'Нет сообщений',
     originalMessage: 'Оригинальное сообщение',
     translatedMessage: 'Переведенное сообщение',
-    socialLinks: 'Ссылки на соцсети'
+    socialLinks: 'Ссылки на соцсети',
+    
+    // Участники группы
+    unknownUser: 'Неизвестный пользователь',
+    addParticipants: 'Добавить участников',
+    addParticipantsToGroup: 'Добавить участников в группу',
+    searchUsers: 'Поиск пользователей...',
+    selectAll: 'Выбрать всех',
+    selectedUsers: 'Выбрано пользователей',
+    addSelected: 'Добавить выбранных',
+    noUsersFound: 'Пользователи не найдены',
+    allUsersAlreadyInGroup: 'Все пользователи уже в группе',
+    removeParticipant: 'Удалить участника',
+    
+    // Настройки профиля
+    profileSettings: 'Настройки профиля',
+    changeAvatar: 'Изменить аватар',
+    userName: 'Имя пользователя',
+    enterUserName: 'Введите имя пользователя',
+    nameRequired: 'Имя обязательно для заполнения',
+    nameTooShort: 'Имя должно содержать минимум 2 символа',
+    nameTooLong: 'Имя не должно превышать 50 символов',
+    avatarUploaded: 'Аватар успешно загружен',
+    avatarUploadError: 'Ошибка загрузки аватара',
+    onlyImagesAllowed: 'Разрешены только изображения',
+    imageTooLarge: 'Размер изображения не должен превышать 2MB',
+    profileUpdated: 'Профиль обновлен',
+    save: 'Сохранить',
+    
+    // Навигация по поиску
+    previousResult: 'Предыдущий результат',
+    nextResult: 'Следующий результат',
+    
+    // Удаление пресета
+    deletePreset: 'Удалить пресет?',
+    confirmDeletePresetMessage: 'Вы уверены, что хотите удалить этот пресет?',
+    yes: 'Да',
+    no: 'Нет'
   },
   
   uk: {
@@ -78,8 +112,6 @@ export const translations = {
     favorites: 'Обране',
     unread: 'Непрочитані',
     archive: 'Архів',
-    online: 'Онлайн',
-    offline: 'Не в мережі',
     showTranslation: 'Показати переклад',
     hideTranslation: 'Приховати переклад',
     enterMessage: 'Введіть повідомлення...',
@@ -132,13 +164,49 @@ export const translations = {
     create: 'Створити',
     groupParticipants: 'Учасники групи',
     totalParticipants: 'Всього учасників',
-    onlineCount: 'Онлайн',
     
     // Повідомлення
     noMessages: 'Немає повідомлень',
     originalMessage: 'Оригінальне повідомлення',
     translatedMessage: 'Перекладене повідомлення',
-    socialLinks: 'Посилання на соцмережі'
+    socialLinks: 'Посилання на соцмережі',
+    
+    // Учасники групи
+    unknownUser: 'Невідомий користувач',
+    addParticipants: 'Додати учасників',
+    addParticipantsToGroup: 'Додати учасників до групи',
+    searchUsers: 'Пошук користувачів...',
+    selectAll: 'Вибрати всіх',
+    selectedUsers: 'Вибрано користувачів',
+    addSelected: 'Додати вибраних',
+    noUsersFound: 'Користувачі не знайдені',
+    allUsersAlreadyInGroup: 'Всі користувачі вже в групі',
+    removeParticipant: 'Видалити учасника',
+    
+    // Налаштування профілю
+    profileSettings: 'Налаштування профілю',
+    changeAvatar: 'Змінити аватар',
+    userName: 'Ім\'я користувача',
+    enterUserName: 'Введіть ім\'я користувача',
+    nameRequired: 'Ім\'я обов\'язкове для заповнення',
+    nameTooShort: 'Ім\'я повинно містити мінімум 2 символи',
+    nameTooLong: 'Ім\'я не повинно перевищувати 50 символів',
+    avatarUploaded: 'Аватар успішно завантажено',
+    avatarUploadError: 'Помилка завантаження аватара',
+    onlyImagesAllowed: 'Дозволені тільки зображення',
+    imageTooLarge: 'Розмір зображення не повинен перевищувати 2MB',
+    profileUpdated: 'Профіль оновлено',
+    save: 'Зберегти',
+    
+    // Навігація по пошуку
+    previousResult: 'Попередній результат',
+    nextResult: 'Наступний результат',
+    
+    // Видалення пресету
+    deletePreset: 'Видалити пресет?',
+    confirmDeletePresetMessage: 'Ви впевнені, що хочете видалити цей пресет?',
+    yes: 'Так',
+    no: 'Ні'
   },
   
   en: {
@@ -149,8 +217,6 @@ export const translations = {
     favorites: 'Favorites',
     unread: 'Unread',
     archive: 'Archive',
-    online: 'Online',
-    offline: 'Offline',
     showTranslation: 'Show translation',
     hideTranslation: 'Hide translation',
     enterMessage: 'Enter message...',
@@ -203,16 +269,53 @@ export const translations = {
     create: 'Create',
     groupParticipants: 'Group participants',
     totalParticipants: 'Total participants',
-    onlineCount: 'Online',
     
     // Messages
     noMessages: 'No messages',
     originalMessage: 'Original message',
     translatedMessage: 'Translated message',
-    socialLinks: 'Social media links'
+    socialLinks: 'Social media links',
+    
+    // Group participants
+    unknownUser: 'Unknown user',
+    addParticipants: 'Add participants',
+    addParticipantsToGroup: 'Add participants to group',
+    searchUsers: 'Search users...',
+    selectAll: 'Select all',
+    selectedUsers: 'Selected users',
+    addSelected: 'Add selected',
+    noUsersFound: 'No users found',
+    allUsersAlreadyInGroup: 'All users already in group',
+    removeParticipant: 'Remove participant',
+    
+    // Profile settings
+    profileSettings: 'Profile Settings',
+    changeAvatar: 'Change Avatar',
+    userName: 'User Name',
+    enterUserName: 'Enter user name',
+    nameRequired: 'Name is required',
+    nameTooShort: 'Name must be at least 2 characters',
+    nameTooLong: 'Name must not exceed 50 characters',
+    avatarUploaded: 'Avatar uploaded successfully',
+    avatarUploadError: 'Avatar upload error',
+    onlyImagesAllowed: 'Only images are allowed',
+    imageTooLarge: 'Image size must not exceed 2MB',
+    profileUpdated: 'Profile updated',
+    save: 'Save',
+    
+    // Search navigation
+    previousResult: 'Previous result',
+    nextResult: 'Next result',
+    
+    // Delete preset
+    deletePreset: 'Delete preset?',
+    confirmDeletePresetMessage: 'Are you sure you want to delete this preset?',
+    yes: 'Yes',
+    no: 'No'
   }
 }
 
 export const getTranslation = (key, language = 'ru') => {
   return translations[language]?.[key] || translations.ru[key] || key
 }
+

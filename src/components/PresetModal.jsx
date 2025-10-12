@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { Modal, Form, Input, Select, Button, Space, message } from 'antd'
-import { PlusOutlined, ShoppingOutlined, InstagramOutlined, MailOutlined } from '@ant-design/icons'
+import { PlusOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined } from '@ant-design/icons'
 
-const { Option } = Select
 
 const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
   const [form] = Form.useForm()
@@ -83,11 +82,13 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
               const getChannelIcon = (channel) => {
                 switch (channel) {
                   case 'amazon':
-                    return <ShoppingOutlined style={{ color: '#ff9900' }} />
+                    return <AmazonOutlined style={{ color: '#ff9900' }} />
                   case 'instagram':
                     return <InstagramOutlined style={{ color: '#e4405f' }} />
                   case 'email':
                     return <MailOutlined style={{ color: '#1890ff' }} />
+                  case 'tiktok':
+                    return <TikTokOutlined style={{ color: '#000000' }} />
                   default:
                     return null
                 }
@@ -118,9 +119,10 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
               )
             }}
           >
-            <Option value="amazon">Amazon</Option>
-            <Option value="instagram">Instagram</Option>
-            <Option value="email">Email</Option>
+            <Select.Option value="amazon">Amazon</Select.Option>
+            <Select.Option value="instagram">Instagram</Select.Option>
+            <Select.Option value="email">Email</Select.Option>
+            <Select.Option value="tiktok">TikTok</Select.Option>
           </Select>
         </Form.Item>
 
@@ -159,9 +161,9 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
             )}
           >
             {stores.map(store => (
-              <Option key={store.id} value={store.id}>
+              <Select.Option key={store.id} value={store.id}>
                 {store.name}
-              </Option>
+              </Select.Option>
             ))}
           </Select>
         </Form.Item>
@@ -203,9 +205,9 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
             )}
           >
             {emails.map(email => (
-              <Option key={email.id} value={email.address}>
+              <Select.Option key={email.id} value={email.address}>
                 {email.address}
-              </Option>
+              </Select.Option>
             ))}
           </Select>
         </Form.Item>

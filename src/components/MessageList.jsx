@@ -3,7 +3,7 @@ import { List, Empty } from 'antd'
 import StructuredMessage from './StructuredMessage'
 import './MessageList.css'
 
-const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru' }) => {
+const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, activeSearchTerm = '' }) => {
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -31,10 +31,15 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru' }) =>
         {messages.map(message => (
           <StructuredMessage
             key={message.id}
+            id={`message-${message.id}`}
             message={message}
             currentUser={currentUser}
             targetLanguage={targetLanguage}
             users={users}
+            onReplyToMessage={onReplyToMessage}
+            onForwardMessage={onForwardMessage}
+            onScrollToMessage={onScrollToMessage}
+            activeSearchTerm={activeSearchTerm}
           />
         ))}
       </div>

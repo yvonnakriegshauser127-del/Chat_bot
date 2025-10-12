@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Select, Dropdown, Space } from 'antd'
-import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, InboxOutlined, FileZipFilled, BellOutlined, ShoppingOutlined, InstagramOutlined, MailOutlined, DownOutlined, DeleteOutlined, TranslationOutlined } from '@ant-design/icons'
+import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Select, Dropdown, Space, Tag, Modal, Popconfirm } from 'antd'
+import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, InboxOutlined, FileZipFilled, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, DeleteOutlined, TranslationOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import PresetModal from './PresetModal'
 import { useTranslation } from '../hooks/useTranslation'
 import './Sidebar.css'
@@ -13,11 +13,13 @@ const Sidebar = ({
   currentChatId, 
   searchTerm, 
   onSearchChange, 
+  onSearchReset,
   onChatSelect, 
   onNewChat,
   users,
   onToggleFavorite,
   onToggleArchive,
+  onTogglePin,
   presets,
   selectedPreset,
   onPresetSelect,
@@ -26,11 +28,40 @@ const Sidebar = ({
   stores,
   emails,
   targetLanguage,
-  onLanguageChange
+  onLanguageChange,
+  onShowProfileSettings,
+  currentUser
 }) => {
-  const [activeSection, setActiveSection] = useState('all')
+  const [activeFilters, setActiveFilters] = useState(['all'])
   const [showPresetModal, setShowPresetModal] = useState(false)
   const { t } = useTranslation(targetLanguage)
+
+
+  // Обработка выбора фильтров
+  const handleFilterToggle = (filter) => {
+    setActiveFilters(prev => {
+      // Если выбран "Все чаты", снимаем все остальные фильтры
+      if (filter === 'all') {
+        return ['all']
+      }
+      
+      // Если "Все чаты" уже выбран, заменяем его на новый фильтр
+      if (prev.includes('all')) {
+        return [filter]
+      }
+      
+      // Если фильтр уже выбран, убираем его
+      if (prev.includes(filter)) {
+        const newFilters = prev.filter(f => f !== filter)
+        // Если не осталось фильтров, возвращаем "Все чаты"
+        return newFilters.length === 0 ? ['all'] : newFilters
+      }
+      
+      // Добавляем новый фильтр
+      return [...prev, filter]
+    })
+  }
+
   const formatTime = (date) => {
     const now = new Date()
     const diff = now - date
@@ -72,11 +103,13 @@ const Sidebar = ({
   const getPlatformIcon = (platform) => {
     switch (platform) {
       case 'amazon':
-        return <ShoppingOutlined style={{ color: '#ff9900', fontSize: '12px' }} />
+        return <AmazonOutlined style={{ color: '#ff9900', fontSize: '12px' }} />
       case 'instagram':
         return <InstagramOutlined style={{ color: '#e4405f', fontSize: '12px' }} />
       case 'email':
         return <MailOutlined style={{ color: '#1890ff', fontSize: '12px' }} />
+      case 'tiktok':
+        return <TikTokOutlined style={{ color: '#000000', fontSize: '12px' }} />
       default:
         return null
     }
@@ -88,11 +121,13 @@ const Sidebar = ({
     if (channels.length === 1) {
       switch (channels[0]) {
         case 'amazon':
-          return <ShoppingOutlined style={{ color: '#ff9900' }} />
+          return <AmazonOutlined style={{ color: '#ff9900' }} />
         case 'instagram':
           return <InstagramOutlined style={{ color: '#e4405f' }} />
         case 'email':
           return <MailOutlined style={{ color: '#1890ff' }} />
+        case 'tiktok':
+          return <TikTokOutlined style={{ color: '#000000' }} />
         default:
           return null
       }
@@ -102,42 +137,93 @@ const Sidebar = ({
     return <span style={{ fontSize: '12px' }}>📱</span>
   }
 
-  // Фильтрация чатов по секциям и поиску
+  // Фильтрация чатов по множественным фильтрам
   const getFilteredChats = () => {
-    let filteredBySection = []
-    
-    switch (activeSection) {
-      case 'favorites':
-        filteredBySection = chats.filter(chat => chat.isFavorite && !chat.isArchived)
-        break
-      case 'archive':
-        filteredBySection = chats.filter(chat => chat.isArchived)
-        break
-      case 'unread':
-        filteredBySection = chats.filter(chat => !chat.isArchived && chat.unreadCount > 0)
-        break
-      case 'amazon':
-        filteredBySection = chats.filter(chat => !chat.isArchived && chat.platform === 'amazon')
-        break
-      case 'instagram':
-        filteredBySection = chats.filter(chat => !chat.isArchived && chat.platform === 'instagram')
-        break
-      case 'email':
-        filteredBySection = chats.filter(chat => !chat.isArchived && chat.platform === 'email')
-        break
-      default:
-        filteredBySection = chats.filter(chat => !chat.isArchived)
+    let filteredChats = chats
+
+    // Если выбран только "Все чаты", показываем только неархивные
+    if (activeFilters.length === 1 && activeFilters.includes('all')) {
+      filteredChats = chats.filter(chat => !chat.isArchived)
+    } else {
+      // Применяем множественные фильтры
+      const filters = activeFilters.filter(f => f !== 'all')
+      
+      if (filters.length > 0) {
+        filteredChats = chats.filter(chat => {
+          // Проверяем, соответствует ли чат хотя бы одному из активных фильтров
+          return filters.some(filter => {
+            switch (filter) {
+              case 'favorites':
+                return chat.isFavorite
+              case 'archive':
+                return chat.isArchived
+              case 'unread':
+                return chat.unreadCount > 0
+              case 'amazon':
+                return chat.platform === 'amazon'
+              case 'instagram':
+                return chat.platform === 'instagram'
+              case 'email':
+                return chat.platform === 'email'
+              case 'tiktok':
+                return chat.platform === 'tiktok'
+              default:
+                return false
+            }
+          })
+        })
+      }
     }
 
     // Дополнительная фильтрация по поиску
-    if (!searchTerm) return filteredBySection
-    
-    const searchLower = searchTerm.toLowerCase()
-    return filteredBySection.filter(chat => 
-      chat.name.toLowerCase().includes(searchLower) ||
-      (chat.messages.length > 0 && 
-       chat.messages[chat.messages.length - 1].content.toLowerCase().includes(searchLower))
-    )
+    let finalFiltered = filteredChats
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      finalFiltered = filteredChats.filter(chat => {
+        // Поиск по имени чата
+        if (chat.name.toLowerCase().includes(searchLower)) {
+          return true
+        }
+        
+        // Поиск по именам участников чата
+        const participantNames = chat.participants.map(participantId => {
+          // Для текущего пользователя используем currentUser
+          if (participantId === currentUser?.id) {
+            return currentUser.name.toLowerCase()
+          }
+          // Для других пользователей ищем в массиве users
+          const user = users.find(u => u.id === participantId)
+          return user?.name?.toLowerCase() || ''
+        })
+        
+        if (participantNames.some(name => name.includes(searchLower))) {
+          return true
+        }
+        
+        // Поиск по содержимому всех сообщений в чате
+        const hasMatchingMessage = chat.messages.some(message => 
+          message.content.toLowerCase().includes(searchLower) ||
+          message.senderName?.toLowerCase().includes(searchLower)
+        )
+        
+        return hasMatchingMessage
+      })
+    }
+
+    // Сортировка: закрепленные чаты сверху, затем обычные
+    return finalFiltered.sort((a, b) => {
+      // Если оба закреплены или оба не закреплены, сортируем по времени последнего сообщения
+      if (a.isPinned === b.isPinned) {
+        const aLastMessage = a.messages[a.messages.length - 1]
+        const bLastMessage = b.messages[b.messages.length - 1]
+        if (aLastMessage && bLastMessage) {
+          return new Date(bLastMessage.timestamp) - new Date(aLastMessage.timestamp)
+        }
+        return 0
+      }
+      // Закрепленные чаты всегда сверху
+      return b.isPinned - a.isPinned
+    })
   }
 
   const filteredChats = getFilteredChats()
@@ -149,151 +235,210 @@ const Sidebar = ({
           <MessageOutlined style={{ fontSize: '20px', marginRight: '8px' }} />
           <Text strong style={{ fontSize: '18px' }}>{t('chats')}</Text>
         </div>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={onNewChat}
-          size="small"
-        />
+        <Space>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={onNewChat}
+            size="small"
+          />
+          <Button 
+            type="text"
+            icon={<SettingOutlined />}
+            onClick={onShowProfileSettings}
+            size="small"
+          />
+        </Space>
       </div>
       
-      <div className="search-container">
+      <div style={{ padding: '0 16px 16px 16px' }}>
         <Input
           placeholder={t('searchChats')}
           prefix={<SearchOutlined />}
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
+          onClear={onSearchReset}
           allowClear
+          size="small"
+          style={{ width: '100%', marginBottom: '8px' }}
         />
       </div>
 
-      <div className="language-selector" style={{ padding: '0 16px 16px 16px' }}>
+      <div style={{ padding: '0 16px 16px 16px' }}>
         <Tooltip title={t('language')}>
           <Select
             value={targetLanguage}
             onChange={onLanguageChange}
             size="small"
-            style={{ width: '100%' }}
+            style={{ width: '100%', marginBottom: '8px' }}
             suffixIcon={<TranslationOutlined />}
           >
-            <Option value="ru">Русский</Option>
-            <Option value="uk">Українська</Option>
-            <Option value="en">English</Option>
+            <Select.Option value="ru">Русский</Select.Option>
+            <Select.Option value="uk">Українська</Select.Option>
+            <Select.Option value="en">English</Select.Option>
           </Select>
         </Tooltip>
       </div>
       
-      <div className="chat-sections">
-        <div className="preset-selector" style={{ marginBottom: '16px' }}>
-          <Dropdown
-            menu={{
-              items: [
-                ...presets.map(preset => ({
-                  key: preset.id,
-                  label: (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '200px' }}>
-                      <Space>
-                        {getPresetChannelIcon(preset.channel)}
-                        <span>{preset.name}</span>
-                      </Space>
+      <div style={{ padding: '0 16px 16px 16px' }}>
+        <Dropdown
+          menu={{
+            items: [
+              ...presets.map(preset => ({
+                key: preset.id,
+                label: (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '200px' }}>
+                    <Space>
+                      {getPresetChannelIcon(preset.channel)}
+                      <span>{preset.name}</span>
+                    </Space>
+                    <Popconfirm
+                      title={t('deletePreset')}
+                      description={t('confirmDeletePresetMessage')}
+                      onConfirm={() => onDeletePreset(preset.id)}
+                      okText={t('yes')}
+                      cancelText={t('no')}
+                      icon={<ExclamationCircleOutlined style={{ color: '#ff8c00' }} />}
+                    >
                       <Button
                         type="text"
                         size="small"
                         icon={<DeleteOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onDeletePreset(preset.id)
-                        }}
+                        onClick={(e) => e.stopPropagation()}
                         style={{ color: '#ff4d4f' }}
                       />
-                    </div>
-                  ),
-                  onClick: () => onPresetSelect(preset.id)
-                })),
-                {
-                  type: 'divider'
-                },
-                {
-                  key: 'add',
-                  label: (
-                    <Space>
-                      <PlusOutlined />
-                      <span>Добавить пресет</span>
-                    </Space>
-                  ),
-                  onClick: () => setShowPresetModal(true)
-                }
-              ]
+                    </Popconfirm>
+                  </div>
+                ),
+                onClick: () => onPresetSelect(preset.id)
+              })),
+              {
+                type: 'divider'
+              },
+              {
+                key: 'add',
+                label: (
+                  <Space>
+                    <PlusOutlined />
+                    <span>Добавить пресет</span>
+                  </Space>
+                ),
+                onClick: () => setShowPresetModal(true)
+              }
+            ]
+          }}
+          trigger={['click']}
+        >
+          <Button 
+            size="small"
+            style={{ 
+              width: '100%', 
+              textAlign: 'left', 
+              justifyContent: 'space-between',
+              height: '24px'
             }}
-            trigger={['click']}
           >
-            <Button style={{ width: '100%', textAlign: 'left', justifyContent: 'space-between' }}>
-              <Space>
-                {selectedPreset ? (
-                  <>
-                    {getPresetChannelIcon(selectedPreset.channels)}
-                    <span>{selectedPreset.name}</span>
-                  </>
-                ) : (
-                  <span>Выберите пресет</span>
-                )}
-              </Space>
-              <DownOutlined />
-            </Button>
-          </Dropdown>
-        </div>
+            <Space>
+              {selectedPreset ? (
+                <>
+                  {getPresetChannelIcon(selectedPreset.channels)}
+                  <span>{selectedPreset.name}</span>
+                </>
+              ) : (
+                <span>Выберите пресет</span>
+              )}
+            </Space>
+            <DownOutlined />
+          </Button>
+        </Dropdown>
+      </div>
+      
+      <div className="chat-sections">
+
+        {/* Отображение активных фильтров */}
+        {activeFilters.length > 1 || (activeFilters.length === 1 && !activeFilters.includes('all')) ? (
+          <div style={{ marginBottom: '12px', padding: '0 16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {activeFilters.filter(f => f !== 'all').map(filter => (
+                <Tag
+                  key={filter}
+                  closable
+                  onClose={() => handleFilterToggle(filter)}
+                  color="blue"
+                  style={{ marginBottom: '4px' }}
+                >
+                  {filter === 'favorites' && <><StarOutlined /> {t('favorites')}</>}
+                  {filter === 'unread' && <><BellOutlined /> {t('unread')}</>}
+                  {filter === 'archive' && <><InboxOutlined /> {t('archive')}</>}
+                  {filter === 'amazon' && <><AmazonOutlined /> Amazon</>}
+                  {filter === 'instagram' && <><InstagramOutlined /> Instagram</>}
+                  {filter === 'email' && <><MailOutlined /> Email</>}
+                  {filter === 'tiktok' && <><TikTokOutlined /> TikTok</>}
+                </Tag>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="section-buttons" style={{ marginBottom: '16px' }}>
           <Button 
-            type={activeSection === 'all' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('all')}
+            type={activeFilters.includes('all') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('all')}
             style={{ marginRight: '4px', marginBottom: '4px' }}
           >
             {t('allChats')}
           </Button>
           <Button 
-            type={activeSection === 'favorites' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('favorites')}
+            type={activeFilters.includes('favorites') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('favorites')}
             icon={<StarOutlined />}
             style={{ marginRight: '4px', marginBottom: '4px' }}
           >
             {t('favorites')}
           </Button>
           <Button 
-            type={activeSection === 'unread' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('unread')}
+            type={activeFilters.includes('unread') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('unread')}
             icon={<BellOutlined />}
             style={{ marginRight: '4px', marginBottom: '4px' }}
           >
             {t('unread')}
           </Button>
           <Button 
-            type={activeSection === 'amazon' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('amazon')}
-            icon={<ShoppingOutlined />}
+            type={activeFilters.includes('amazon') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('amazon')}
+            icon={<AmazonOutlined />}
             style={{ marginRight: '4px', marginBottom: '4px' }}
           >
             Amazon
           </Button>
           <Button 
-            type={activeSection === 'instagram' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('instagram')}
+            type={activeFilters.includes('instagram') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('instagram')}
             icon={<InstagramOutlined />}
             style={{ marginRight: '4px', marginBottom: '4px' }}
           >
             Instagram
           </Button>
           <Button 
-            type={activeSection === 'email' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('email')}
+            type={activeFilters.includes('email') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('email')}
             icon={<MailOutlined />}
             style={{ marginRight: '4px', marginBottom: '4px' }}
           >
             Email
           </Button>
           <Button 
-            type={activeSection === 'archive' ? 'primary' : 'text'}
-            onClick={() => setActiveSection('archive')}
+            type={activeFilters.includes('tiktok') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('tiktok')}
+            icon={<TikTokOutlined />}
+            style={{ marginRight: '4px', marginBottom: '4px' }}
+          >
+            TikTok
+          </Button>
+          <Button 
+            type={activeFilters.includes('archive') ? 'primary' : 'text'}
+            onClick={() => handleFilterToggle('archive')}
             icon={<InboxOutlined />}
             style={{ marginBottom: '4px' }}
           >
@@ -325,7 +470,7 @@ const Sidebar = ({
                           <Text 
                             strong 
                             style={{ fontSize: '14px', cursor: 'pointer' }}
-              onClick={() => onChatSelect(chat.id)}
+              onClick={() => onChatSelect(chat.id, searchTerm)}
             >
                             {chat.name}
                           </Text>
@@ -341,11 +486,11 @@ const Sidebar = ({
                     }
                     description={
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text 
+                        <Text
                           type="secondary" 
                           style={{ fontSize: '12px', flex: 1 }}
-                          ellipsis={{ tooltip: lastMessageText }}
-                          onClick={() => onChatSelect(chat.id)}
+                          ellipsis={true}
+                          onClick={() => onChatSelect(chat.id, searchTerm)}
                         >
                           {lastMessageText}
                         </Text>
@@ -358,6 +503,17 @@ const Sidebar = ({
                               onClick={(e) => {
                                 e.stopPropagation()
                                 onToggleFavorite(chat.id)
+                              }}
+                            />
+                          </Tooltip>
+                          <Tooltip title={chat.isPinned ? 'Открепить чат' : 'Закрепить чат'}>
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<PushpinOutlined style={{ color: chat.isPinned ? '#1890ff' : undefined }} />}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onTogglePin(chat.id)
                               }}
                             />
                           </Tooltip>
@@ -392,6 +548,7 @@ const Sidebar = ({
           emails={emails}
         />
       )}
+
     </Sider>
   )
 }

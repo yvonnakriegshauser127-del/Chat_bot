@@ -134,24 +134,22 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
                     {template.name}
                   </Text>
                   <br />
-                  <Tooltip title={template.content} placement="top">
-                    <Text 
-                      type="secondary" 
-                      style={{ 
-                        fontSize: '12px',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        lineHeight: '1.4',
-                        maxHeight: '16.8px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {template.content}
-                    </Text>
-                  </Tooltip>
+                  <Text 
+                    type="secondary" 
+                    style={{ 
+                      fontSize: '12px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: '1.4',
+                      maxHeight: '16.8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {template.content}
+                  </Text>
                 </div>
                 <Space>
                   <Tooltip title="Просмотреть шаблон">
