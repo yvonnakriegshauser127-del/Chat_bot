@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Modal, Form, Input, Select, Tag, Space, Avatar, Button, Upload } from 'antd'
-import { UploadOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons'
+import { UploadOutlined, UserOutlined, PlusOutlined, CameraOutlined } from '@ant-design/icons'
 import { useTranslation } from '../hooks/useTranslation'
+import './AvatarStyles.css'
 
 
 const NewChatModal = ({ 
@@ -120,20 +121,24 @@ const NewChatModal = ({
 
         <Form.Item label={t('groupAvatar')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <Avatar 
-              size={64} 
-              style={{ backgroundColor: '#52c41a' }}
-              src={groupAvatar}
-              icon={!groupAvatar && <UserOutlined />}
-            />
-            <Upload {...uploadProps}>
-              <Button 
-                icon={<PlusOutlined />}
-                size="small"
-              >
-                {groupAvatar ? t('changeAvatar') : t('addAvatar')}
-              </Button>
-            </Upload>
+            <div className="avatar-hover-container">
+              <Upload {...uploadProps}>
+                <div>
+                  <Avatar 
+                    size={64} 
+                    style={{ 
+                      backgroundColor: '#52c41a',
+                      transition: 'all 0.3s ease'
+                    }}
+                    src={groupAvatar}
+                    icon={!groupAvatar && <UserOutlined />}
+                  />
+                  <div className="camera-overlay small">
+                    <CameraOutlined style={{ color: 'white', fontSize: '10px' }} />
+                  </div>
+                </div>
+              </Upload>
+            </div>
           </div>
         </Form.Item>
         

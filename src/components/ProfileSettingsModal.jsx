@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, Form, Input, Button, Upload, Avatar, message, Space, Select } from 'antd'
-import { UserOutlined, SettingOutlined, UploadOutlined, TranslationOutlined } from '@ant-design/icons'
+import { UserOutlined, SettingOutlined, UploadOutlined, TranslationOutlined, CameraOutlined } from '@ant-design/icons'
 import { useTranslation } from '../hooks/useTranslation'
+import './AvatarStyles.css'
 
 const ProfileSettingsModal = ({ 
   visible, 
@@ -139,25 +140,24 @@ const ProfileSettingsModal = ({
       className="profile-settings-modal"
     >
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <Avatar
-          size={80}
-          style={{ 
-            backgroundColor: '#1890ff',
-            fontSize: '32px',
-            marginBottom: '16px'
-          }}
-        >
-          {avatarUrl}
-        </Avatar>
-        <div>
+        <div className="avatar-hover-container">
           <Upload {...uploadProps}>
-            <Button 
-              icon={<UploadOutlined />} 
-              loading={loading}
-              size="small"
-            >
-              {t('changeAvatar')}
-            </Button>
+            <div>
+              <Avatar
+                size={80}
+                style={{ 
+                  backgroundColor: '#1890ff',
+                  fontSize: '32px',
+                  marginBottom: '16px',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {avatarUrl}
+              </Avatar>
+              <div className="camera-overlay">
+                <CameraOutlined style={{ color: 'white', fontSize: '12px' }} />
+              </div>
+            </div>
           </Upload>
         </div>
       </div>

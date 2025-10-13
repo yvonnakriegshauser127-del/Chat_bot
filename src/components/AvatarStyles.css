@@ -1,0 +1,52 @@
+/* Стили для иконки фотоаппарата на аватарке профиля */
+.profile-settings-modal .avatar-camera-icon {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-settings-modal div:hover .avatar-camera-icon {
+  opacity: 1;
+}
+
+/* Стили для иконки фотоаппарата на аватарке группы */
+.group-avatar-camera-icon {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+div:hover .group-avatar-camera-icon {
+  opacity: 1;
+}
+
+/* Общие стили для hover эффекта на аватарках */
+.avatar-hover-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.avatar-hover-container:hover .camera-overlay {
+  opacity: 1;
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.camera-overlay.small {
+  width: 20px;
+  height: 20px;
+}
