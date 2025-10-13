@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Form, Input, Button, Upload, Avatar, message, Space } from 'antd'
-import { UserOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons'
+import { Modal, Form, Input, Button, Upload, Avatar, message, Space, Select } from 'antd'
+import { UserOutlined, SettingOutlined, UploadOutlined, TranslationOutlined } from '@ant-design/icons'
 import { useTranslation } from '../hooks/useTranslation'
 
 const ProfileSettingsModal = ({ 
@@ -8,21 +8,33 @@ const ProfileSettingsModal = ({
   onClose, 
   currentUser, 
   onUpdateProfile, 
-  targetLanguage = 'ru' 
+  targetLanguage = 'ru',
+  onLanguageChange
 }) => {
   const { t } = useTranslation(targetLanguage)
   const [form] = Form.useForm()
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatar || '👤')
   const [loading, setLoading] = useState(false)
+  const [selectedLanguage, setSelectedLanguage] = useState(targetLanguage || 'ru')
 
   useEffect(() => {
     if (visible && currentUser) {
       form.setFieldsValue({
-        name: currentUser.name
+        name: currentUser.name,
+        language: targetLanguage || 'ru'
       })
       setAvatarUrl(currentUser.avatar || '👤')
+      setSelectedLanguage(targetLanguage || 'ru')
     }
-  }, [visible, currentUser, form])
+  }, [visible, currentUser, form, targetLanguage])
+
+  // Отдельный useEffect для отслеживания изменений targetLanguage
+  useEffect(() => {
+    console.log('ProfileSettingsModal: targetLanguage changed to:', targetLanguage)
+    const newLanguage = targetLanguage || 'ru'
+    console.log('ProfileSettingsModal: setting selectedLanguage to:', newLanguage)
+    setSelectedLanguage(newLanguage)
+  }, [targetLanguage])
 
   const handleAvatarChange = (info) => {
     if (info.file.status === 'uploading') {
@@ -55,11 +67,29 @@ const ProfileSettingsModal = ({
         avatar: avatarUrl
       }
       onUpdateProfile(updatedProfile)
-      message.success(t('profileUpdated'))
+      
+      // Применяем изменения языка
+      const newLanguage = values.language || selectedLanguage
+      if (newLanguage !== targetLanguage) {
+        onLanguageChange(newLanguage)
+        // Не показываем уведомление при смене языка
+      } else {
+        // Показываем уведомление только если язык не изменился
+        message.success(t('profileUpdated'))
+      }
+      
       onClose()
     } catch (error) {
       console.error('Validation failed:', error)
     }
+  }
+
+  const handleCancel = () => {
+    // Сбрасываем все изменения при отмене
+    setSelectedLanguage(targetLanguage)
+    setAvatarUrl(currentUser?.avatar || '👤')
+    form.resetFields()
+    onClose()
   }
 
   const uploadProps = {
@@ -96,9 +126,9 @@ const ProfileSettingsModal = ({
         </Space>
       }
       open={visible}
-      onCancel={onClose}
+      onCancel={handleCancel}
       footer={[
-        <Button key="cancel" onClick={onClose}>
+        <Button key="cancel" onClick={handleCancel}>
           {t('cancel')}
         </Button>,
         <Button key="save" type="primary" onClick={handleSave}>
@@ -152,6 +182,26 @@ const ProfileSettingsModal = ({
             placeholder={t('enterUserName')}
             prefix={<UserOutlined />}
           />
+        </Form.Item>
+
+        <Form.Item
+          name="language"
+          label={t('language')}
+        >
+          {console.log('ProfileSettingsModal: rendering Select with selectedLanguage:', selectedLanguage)}
+          <Select
+            onChange={(value) => {
+              console.log('ProfileSettingsModal: language changed to:', value)
+              setSelectedLanguage(value)
+            }}
+            style={{ width: '100%' }}
+            suffixIcon={<TranslationOutlined />}
+            placeholder="Выберите язык"
+          >
+            <Select.Option value="ru">Русский</Select.Option>
+            <Select.Option value="uk">Українська</Select.Option>
+            <Select.Option value="en">English</Select.Option>
+          </Select>
         </Form.Item>
       </Form>
     </Modal>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { Modal, Form, Input, Select, Button, Space, message } from 'antd'
 import { PlusOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined } from '@ant-design/icons'
+import { useTranslation } from '../hooks/useTranslation'
 
 
-const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
+const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetLanguage = 'ru' }) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const { t } = useTranslation(targetLanguage)
 
   const handleSubmit = async () => {
     try {
@@ -39,15 +41,15 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
 
   return (
     <Modal
-      title="Создать новый пресет"
+      title={t('createNewPreset')}
       open={visible}
       onCancel={handleCancel}
       footer={[
         <Button key="cancel" onClick={handleCancel}>
-          Отмена
+          {t('cancel')}
         </Button>,
         <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
-          Создать пресет
+          {t('createPreset')}
         </Button>
       ]}
       width={500}
@@ -59,23 +61,23 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
       >
         <Form.Item
           name="name"
-          label="Название пресета"
+          label={t('presetName')}
           rules={[
-            { required: true, message: 'Введите название пресета' },
-            { min: 2, message: 'Название должно содержать минимум 2 символа' }
+            { required: true, message: t('enterPresetName') },
+            { min: 2, message: t('nameTooShort') }
           ]}
         >
-          <Input placeholder="Например: Amazon Electronics Store" />
+          <Input placeholder={t('enterPresetName')} />
         </Form.Item>
 
         <Form.Item
           name="channels"
-          label="Каналы"
-          rules={[{ required: true, message: 'Выберите хотя бы один канал' }]}
+          label={t('channels')}
+          rules={[{ required: true, message: t('selectChannels') }]}
         >
           <Select 
             mode="multiple" 
-            placeholder="Выберите каналы"
+            placeholder={t('selectChannels')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
             tagRender={({ label, value, closable, onClose }) => {
@@ -128,12 +130,12 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
 
         <Form.Item
           name="stores"
-          label="Магазины"
-          rules={[{ required: true, message: 'Выберите хотя бы один магазин' }]}
+          label={t('stores')}
+          rules={[{ required: true, message: t('selectStores') }]}
         >
           <Select 
             mode="multiple" 
-            placeholder="Выберите магазины"
+            placeholder={t('selectStores')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
             tagRender={({ label, value, closable, onClose }) => (
@@ -170,14 +172,14 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails }) => {
 
         <Form.Item
           name="emails"
-          label="Email адреса"
+          label={t('emails')}
           rules={[
-            { required: true, message: 'Выберите хотя бы один email' }
+            { required: true, message: t('selectEmails') }
           ]}
         >
           <Select 
             mode="multiple" 
-            placeholder="Выберите email адреса"
+            placeholder={t('selectEmails')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
             tagRender={({ label, value, closable, onClose }) => (

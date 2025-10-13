@@ -15,6 +15,7 @@ const { Text, Paragraph } = Typography
 
 const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, activeSearchTerm = '' }) => {
   const [translatedText, setTranslatedText] = useState('')
+  const [translatedLanguage, setTranslatedLanguage] = useState('')
   const [socialLinks, setSocialLinks] = useState([])
   const [isTranslating, setIsTranslating] = useState(false)
   const [showTranslation, setShowTranslation] = useState(false)
@@ -60,24 +61,33 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
   // Сбрасываем переведенный текст при изменении языка
   useEffect(() => {
     setTranslatedText('')
+    setTranslatedLanguage('')
     setShowTranslation(false)
   }, [targetLanguage])
 
   const handleShowTranslation = async () => {
-    // Если перевода нет или он был сделан на другом языке, переводим заново
-    if (!translatedText && !isTranslating) {
-      setIsTranslating(true)
-      try {
-        const translation = await translationService.translate(message.content, targetLanguage)
-        setTranslatedText(translation)
-      } catch (error) {
-        console.error('Translation error:', error)
-        setTranslatedText(message.content)
-      } finally {
-        setIsTranslating(false)
+    // Если блок перевода скрыт, показываем его и переводим
+    if (!showTranslation) {
+      // Если перевода нет или он был сделан на другом языке, переводим заново
+      if ((!translatedText || translatedLanguage !== targetLanguage) && !isTranslating) {
+        setIsTranslating(true)
+        try {
+          const translation = await translationService.translate(message.content, targetLanguage)
+          setTranslatedText(translation)
+          setTranslatedLanguage(targetLanguage)
+        } catch (error) {
+          console.error('Translation error:', error)
+          setTranslatedText(message.content)
+          setTranslatedLanguage(targetLanguage)
+        } finally {
+          setIsTranslating(false)
+        }
       }
+      setShowTranslation(true)
+    } else {
+      // Если блок перевода показан, просто скрываем его
+      setShowTranslation(false)
     }
-    setShowTranslation(!showTranslation)
   }
 
   const handleReplyToMessage = () => {
@@ -198,7 +208,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                 size="small"
                 icon={<SendOutlined />}
                 onClick={handleForwardMessage}
-                title="Переслать сообщение"
+                title={t('forwardMessage')}
                 style={{ 
                   minWidth: 'auto',
                   padding: '2px 4px',
@@ -207,7 +217,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                   lineHeight: '1.2'
                 }}
               >
-                Переслать
+                {t('forward')}
               </Button>
             </div>
           </div>
@@ -241,18 +251,18 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                 size="small"
                 icon={<MessageOutlined />}
                 onClick={handleReplyToMessage}
-                title="Ответить на сообщение"
+                title={t('replyToMessage')}
               >
-                Ответить
+                {t('reply')}
               </Button>
               <Button 
                 type="text" 
                 size="small"
                 icon={<SendOutlined />}
                 onClick={handleForwardMessage}
-                title="Переслать сообщение"
+                title={t('forwardMessage')}
               >
-                Переслать
+                {t('forward')}
               </Button>
               <Button 
                 type="text" 
@@ -315,22 +325,19 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
           {/* Переведенное и структурированное сообщение */}
           {showTranslation && (
             <div className="translated-message">
-              <div className="message-section-header">
-                <Text strong>Перевод и структурированная информация</Text>
-              </div>
               
               {isTranslating ? (
                 <div className="translation-loading">
                   <Spin size="small" />
                   <Text type="secondary" style={{ marginLeft: '8px' }}>
-                    Переводим сообщение...
+                    {t('translatingMessage')}
                   </Text>
                 </div>
               ) : (
                 <div className="structured-content">
                   {/* Основной перевод */}
                   <div className="translation-section">
-                    <Text strong>Перевод:</Text>
+                    <Text strong>{t('translation')}</Text>
                     <Paragraph style={{ margin: '8px 0', whiteSpace: 'pre-wrap' }}>
                       {translatedText}
                     </Paragraph>

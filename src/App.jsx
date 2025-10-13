@@ -9,6 +9,7 @@ import GroupParticipantsModal from './components/GroupParticipantsModal'
 import ForwardMessageModal from './components/ForwardMessageModal'
 import ProfileSettingsModal from './components/ProfileSettingsModal'
 import { testUsers, testTemplates, initialChats, testStores, testEmails, testPresets } from './data/testData'
+import { localStorageUtils } from './utils/localStorage'
 import './App.css'
 
 function App() {
@@ -21,7 +22,11 @@ function App() {
   const [stores] = useState(testStores)
   const [emails] = useState(testEmails)
   const [searchTerm, setSearchTerm] = useState('')
-  const [targetLanguage, setTargetLanguage] = useState('ru')
+  const [targetLanguage, setTargetLanguage] = useState(() => {
+    const language = localStorageUtils.getLanguage()
+    console.log('App: initial targetLanguage:', language)
+    return language
+  })
   const [showNewChatModal, setShowNewChatModal] = useState(false)
   const [showTemplatesModal, setShowTemplatesModal] = useState(false)
   const [showParticipantsModal, setShowParticipantsModal] = useState(false)
@@ -35,6 +40,13 @@ function App() {
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0)
 
   const [currentUser, setCurrentUser] = useState({ id: 1, name: 'Вы', avatar: '👤' })
+
+  // Обработка изменения языка
+  const handleLanguageChange = (newLanguage) => {
+    console.log('App: handleLanguageChange called with:', newLanguage)
+    setTargetLanguage(newLanguage)
+    localStorageUtils.setLanguage(newLanguage)
+  }
 
   // Фильтрация чатов по поиску (будет выполняться в Sidebar)
   // const filteredChats = chats.filter(chat => {
@@ -128,13 +140,31 @@ function App() {
     const participant = users.find(u => u.id !== currentUser.id && chat.participants.includes(u.id))
     if (!participant) return
 
-    const responses = [
-      'Понял, спасибо!',
-      'Хорошо, давай обсудим это позже',
-      'Отлично, я займусь этим',
-      'Спасибо за информацию',
-      'Да, согласен с вами'
-    ]
+    // Разные ответы для разных платформ
+    let responses = []
+    let brandName = null
+
+    if (chat.platform === 'amazon') {
+      responses = [
+        'Your order has been processed successfully',
+        'New product review available',
+        'Inventory update: Product back in stock',
+        'Customer inquiry received',
+        'Sales report generated'
+      ]
+      // Получаем название бренда из существующих сообщений или используем случайное
+      const existingBrand = chat.messages.find(msg => msg.brandName)?.brandName
+      const amazonBrands = ['Liberhaus', 'NYCHKA', 'TechGear Pro', 'StyleMax', 'EcoHome']
+      brandName = existingBrand || amazonBrands[Math.floor(Math.random() * amazonBrands.length)]
+    } else {
+      responses = [
+        'Понял, спасибо!',
+        'Хорошо, давай обсудим это позже',
+        'Отлично, я займусь этим',
+        'Спасибо за информацию',
+        'Да, согласен с вами'
+      ]
+    }
 
     const response = responses[Math.floor(Math.random() * responses.length)]
     const responseMessage = {
@@ -143,7 +173,8 @@ function App() {
       senderName: participant.name,
       content: response,
       timestamp: new Date(),
-      read: false
+      read: false,
+      ...(brandName && { brandName })
     }
 
     setChats(prevChats =>
@@ -176,16 +207,34 @@ function App() {
     
     if (!participant) return
 
-    const randomMessages = [
-      'Привет! Как дела?',
-      'Можешь помочь с проектом?',
-      'Когда сможем встретиться?',
-      'Отправил файлы, проверь пожалуйста',
-      'Есть новости по нашему вопросу?',
-      'Спасибо за помощь!',
-      'Можешь перезвонить?',
-      'Все готово, можно начинать'
-    ]
+    // Разные сообщения для разных платформ
+    let randomMessages = []
+    let brandName = null
+
+    if (randomChat.platform === 'amazon') {
+      randomMessages = [
+        'New customer review posted',
+        'Product performance report ready',
+        'Inventory alert: Low stock detected',
+        'Customer support ticket created',
+        'Sales analytics updated'
+      ]
+      // Получаем название бренда из существующих сообщений или используем случайное
+      const existingBrand = randomChat.messages.find(msg => msg.brandName)?.brandName
+      const amazonBrands = ['Liberhaus', 'NYCHKA', 'TechGear Pro', 'StyleMax', 'EcoHome']
+      brandName = existingBrand || amazonBrands[Math.floor(Math.random() * amazonBrands.length)]
+    } else {
+      randomMessages = [
+        'Привет! Как дела?',
+        'Можешь помочь с проектом?',
+        'Когда сможем встретиться?',
+        'Отправил файлы, проверь пожалуйста',
+        'Есть новости по нашему вопросу?',
+        'Спасибо за помощь!',
+        'Можешь перезвонить?',
+        'Все готово, можно начинать'
+      ]
+    }
 
     const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)]
     const incomingMessage = {
@@ -194,7 +243,8 @@ function App() {
       senderName: participant.name,
       content: randomMessage,
       timestamp: new Date(),
-      read: false
+      read: false,
+      ...(brandName && { brandName })
     }
 
     setChats(prevChats =>
@@ -558,7 +608,6 @@ function App() {
             stores={stores}
             emails={emails}
             targetLanguage={targetLanguage}
-            onLanguageChange={setTargetLanguage}
             onShowProfileSettings={() => setShowProfileModal(true)}
             currentUser={currentUser}
           />
@@ -596,6 +645,7 @@ function App() {
           currentGroupParticipants={currentGroupParticipants}
           onAddParticipant={handleAddParticipant}
           onRemoveParticipant={handleRemoveParticipant}
+          targetLanguage={targetLanguage}
         />
 
         <TemplatesModal
@@ -606,6 +656,7 @@ function App() {
           onCreateTemplate={createTemplate}
           onDeleteTemplate={deleteTemplate}
           onUpdateTemplate={updateTemplate}
+          targetLanguage={targetLanguage}
         />
 
         <GroupParticipantsModal
@@ -638,6 +689,7 @@ function App() {
           currentUser={currentUser}
           onUpdateProfile={updateUserProfile}
           targetLanguage={targetLanguage}
+          onLanguageChange={handleLanguageChange}
         />
 
       </Layout>

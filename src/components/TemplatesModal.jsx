@@ -1,16 +1,18 @@
 import React, { useState } from 'react'
 import { Modal, List, Typography, Card, Button, Input, Form, Space, Popconfirm, Tooltip } from 'antd'
 import { FileTextOutlined, PlusOutlined, DeleteOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons'
+import { useTranslation } from '../hooks/useTranslation'
 
 const { Text } = Typography
 
-const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreateTemplate, onDeleteTemplate, onUpdateTemplate }) => {
+const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreateTemplate, onDeleteTemplate, onUpdateTemplate, targetLanguage = 'ru' }) => {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [form] = Form.useForm()
   const [editForm] = Form.useForm()
+  const { t } = useTranslation(targetLanguage)
 
   const handleCreateTemplate = async () => {
     try {
@@ -57,7 +59,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
 
   return (
     <Modal
-      title="Шаблоны сообщений"
+      title={t('messageTemplates')}
       open={visible}
       onCancel={onClose}
       footer={null}
@@ -70,7 +72,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
           onClick={() => setShowCreateForm(true)}
           style={{ width: '100%' }}
         >
-          Добавить новый шаблон
+{t('addNewTemplate')}
         </Button>
       </div>
 
@@ -78,32 +80,32 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
         <Card style={{ marginBottom: '16px', backgroundColor: '#f9f9f9' }}>
           <Form form={form} layout="vertical">
             <Form.Item 
-              label="Название шаблона"
+              label={t('templateName')}
               name="name"
-              rules={[{ required: true, message: 'Введите название шаблона' }]}
+              rules={[{ required: true, message: t('enterTemplateName') }]}
             >
-              <Input placeholder="Введите название шаблона" />
+              <Input placeholder={t('enterTemplateName')} />
             </Form.Item>
             <Form.Item 
-              label="Текст шаблона"
+              label={t('templateText')}
               name="content"
-              rules={[{ required: true, message: 'Введите текст шаблона' }]}
+              rules={[{ required: true, message: t('enterTemplateText') }]}
             >
               <Input.TextArea 
-                placeholder="Введите текст шаблона"
+                placeholder={t('enterTemplateText')}
                 rows={3}
               />
             </Form.Item>
             <Form.Item>
               <Space>
                 <Button type="primary" onClick={handleCreateTemplate}>
-                  Создать шаблон
+                  {t('createTemplate')}
                 </Button>
                 <Button onClick={() => {
                   setShowCreateForm(false)
                   form.resetFields()
                 }}>
-                  Отмена
+                  {t('cancel')}
                 </Button>
               </Space>
             </Form.Item>
@@ -152,7 +154,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
                   </Text>
                 </div>
                 <Space>
-                  <Tooltip title="Просмотреть шаблон">
+                  <Tooltip title={t('viewTemplate')}>
                     <Button
                       type="text"
                       size="small"
@@ -163,7 +165,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
                       }}
                     />
                   </Tooltip>
-                  <Tooltip title="Редактировать шаблон">
+                  <Tooltip title={t('editTemplate')}>
                     <Button
                       type="text"
                       size="small"
@@ -175,13 +177,13 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
                     />
                   </Tooltip>
                   <Popconfirm
-                    title="Удалить шаблон?"
-                    description="Вы уверены, что хотите удалить этот шаблон?"
+                    title={t('deleteTemplateConfirm')}
+                    description={t('deleteTemplateDescription')}
                     onConfirm={() => onDeleteTemplate(template.id)}
-                    okText="Да"
-                    cancelText="Нет"
+                    okText={t('yes')}
+                    cancelText={t('no')}
                   >
-                    <Tooltip title="Удалить шаблон">
+                    <Tooltip title={t('deleteTemplate')}>
                       <Button 
                         type="text" 
                         danger 
@@ -200,7 +202,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
 
       {/* Модальное окно для просмотра шаблона */}
       <Modal
-        title="Просмотр шаблона"
+        title={t('viewTemplateTitle')}
         open={showViewModal}
         onCancel={() => {
           setShowViewModal(false)
@@ -211,7 +213,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
             setShowViewModal(false)
             setSelectedTemplate(null)
           }}>
-            Закрыть
+{t('close')}
           </Button>
         ]}
         width={600}
@@ -239,7 +241,7 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
 
       {/* Модальное окно для редактирования шаблона */}
       <Modal
-        title="Редактировать шаблон"
+        title={t('editTemplateTitle')}
         open={showEditModal}
         onCancel={() => {
           setShowEditModal(false)
@@ -252,10 +254,10 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
             setSelectedTemplate(null)
             editForm.resetFields()
           }}>
-            Отмена
+            {t('cancel')}
           </Button>,
           <Button key="save" type="primary" onClick={handleUpdateTemplate}>
-            Сохранить изменения
+            {t('saveChanges')}
           </Button>
         ]}
         width={600}
@@ -266,19 +268,19 @@ const TemplatesModal = ({ visible, templates, onClose, onSelectTemplate, onCreat
           requiredMark={false}
         >
           <Form.Item 
-            label="Название шаблона"
+            label={t('templateName')}
             name="name"
-            rules={[{ required: true, message: 'Введите название шаблона' }]}
+            rules={[{ required: true, message: t('enterTemplateName') }]}
           >
-            <Input placeholder="Введите название шаблона" />
+            <Input placeholder={t('enterTemplateName')} />
           </Form.Item>
           <Form.Item 
-            label="Текст шаблона"
+            label={t('templateText')}
             name="content"
-            rules={[{ required: true, message: 'Введите текст шаблона' }]}
+            rules={[{ required: true, message: t('enterTemplateText') }]}
           >
             <Input.TextArea 
-              placeholder="Введите текст шаблона"
+              placeholder={t('enterTemplateText')}
               rows={6}
             />
           </Form.Item>

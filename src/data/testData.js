@@ -265,7 +265,8 @@ export const initialChats = [
         senderName: 'Amazon Support',
         content: 'Your order has been shipped!',
         timestamp: new Date(Date.now() - 1800000),
-        read: false
+        read: false,
+        brandName: 'Liberhaus'
       }
     ],
     isImportant: false,
@@ -314,6 +315,64 @@ export const initialChats = [
         content: 'Hey! Ready to create some viral content?',
         timestamp: new Date(Date.now() - 600000),
         read: false
+      }
+    ],
+    isImportant: false,
+    isArchived: false,
+    isPinned: false,
+    unreadCount: 1
+  },
+  {
+    id: 8,
+    name: 'NYCHKA Store',
+    type: 'private',
+    participants: [1, 11],
+    isFavorite: false,
+    isArchived: false,
+    isPinned: false,
+    platform: 'amazon',
+    messages: [
+      {
+        id: 11,
+        senderId: 11,
+        senderName: 'Amazon Support',
+        content: 'New product review available for your brand',
+        timestamp: new Date(Date.now() - 1200000),
+        read: false,
+        brandName: 'NYCHKA'
+      },
+      {
+        id: 12,
+        senderId: 1,
+        senderName: 'Вы',
+        content: 'Thank you for the update!',
+        timestamp: new Date(Date.now() - 1000000),
+        read: true
+      }
+    ],
+    isImportant: false,
+    isArchived: false,
+    isPinned: false,
+    unreadCount: 1
+  },
+  {
+    id: 9,
+    name: 'TechGear Pro',
+    type: 'private',
+    participants: [1, 11],
+    isFavorite: true,
+    isArchived: false,
+    isPinned: false,
+    platform: 'amazon',
+    messages: [
+      {
+        id: 13,
+        senderId: 11,
+        senderName: 'Amazon Support',
+        content: 'Your product has been featured in Amazon\'s recommended section',
+        timestamp: new Date(Date.now() - 800000),
+        read: false,
+        brandName: 'TechGear Pro'
       }
     ],
     isImportant: false,

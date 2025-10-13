@@ -12,6 +12,8 @@ export const translations = {
     enterMessage: 'Введите сообщение...',
     minimize: 'Свернуть чат',
     language: 'Язык перевода',
+    selectChatToStart: 'Выберите чат для начала общения',
+    selectChatFromList: 'Выберите чат из списка слева или создайте новый',
     
     // Пресеты
     selectPreset: 'Выберите пресет',
@@ -87,6 +89,7 @@ export const translations = {
     nameTooShort: 'Имя должно содержать минимум 2 символа',
     nameTooLong: 'Имя не должно превышать 50 символов',
     avatarUploaded: 'Аватар успешно загружен',
+    languageChanged: 'Язык интерфейса изменен',
     avatarUploadError: 'Ошибка загрузки аватара',
     onlyImagesAllowed: 'Разрешены только изображения',
     imageTooLarge: 'Размер изображения не должен превышать 2MB',
@@ -101,7 +104,79 @@ export const translations = {
     deletePreset: 'Удалить пресет?',
     confirmDeletePresetMessage: 'Вы уверены, что хотите удалить этот пресет?',
     yes: 'Да',
-    no: 'Нет'
+    no: 'Нет',
+    
+    // Templates
+    messageTemplates: 'Шаблоны сообщений',
+    templateName: 'Название шаблона',
+    enterTemplateName: 'Введите название шаблона',
+    templateText: 'Текст шаблона',
+    enterTemplateText: 'Введите текст шаблона',
+    viewTemplate: 'Просмотреть шаблон',
+    editTemplate: 'Редактировать шаблон',
+    deleteTemplate: 'Удалить шаблон',
+    deleteTemplateConfirm: 'Удалить шаблон?',
+    deleteTemplateDescription: 'Вы уверены, что хотите удалить этот шаблон?',
+    viewTemplateTitle: 'Просмотр шаблона',
+    editTemplateTitle: 'Редактировать шаблон',
+    saveChanges: 'Сохранить изменения',
+    close: 'Закрыть',
+    cancel: 'Отмена',
+    
+    // New chat
+    createNewGroup: 'Создать новую группу',
+    groupName: 'Название группы',
+    enterGroupName: 'Введите название группы',
+    groupAvatar: 'Аватарка группы',
+    participants: 'Участники',
+    selectUsers: 'Выберите пользователей',
+    create: 'Создать',
+    
+    // Preset
+    createNewPreset: 'Создать новый пресет',
+    presetName: 'Название пресета',
+    enterPresetName: 'Например: Amazon Electronics Store',
+    channels: 'Каналы',
+    selectChannels: 'Выберите каналы',
+    stores: 'Магазины',
+    selectStores: 'Выберите магазины',
+    emails: 'Email адреса',
+    selectEmails: 'Выберите email адреса',
+    
+    // Language
+    language: 'Язык',
+    
+    // Avatar
+    changeAvatar: 'Изменить аватар',
+    addAvatar: 'Добавить аватар',
+    
+    // Preset dropdown
+    selectPreset: 'Выберите пресет',
+    addPreset: 'Добавить пресет',
+    createPreset: 'Создать пресет',
+    
+    // Templates
+    addNewTemplate: 'Добавить новый шаблон',
+    createTemplate: 'Создать шаблон',
+    messageTemplatesTooltip: 'Шаблоны сообщений',
+    attachFile: 'Прикрепить файл',
+    
+    // Time
+    now: 'Сейчас',
+    minutesAgo: 'м',
+    hoursAgo: 'ч',
+    daysAgo: 'д',
+    
+    // Chat actions
+    pinChat: 'Закрепить чат',
+    unpinChat: 'Открепить чат',
+    reply: 'Ответить',
+    replyToMessage: 'Ответить на сообщение',
+    forward: 'Переслать',
+    forwardMessage: 'Переслать сообщение',
+    participantsCount: 'Участников',
+    translation: 'Перевод:',
+    translatingMessage: 'Переводим сообщение...'
   },
   
   uk: {
@@ -117,6 +192,8 @@ export const translations = {
     enterMessage: 'Введіть повідомлення...',
     minimize: 'Згорнути чат',
     language: 'Мова перекладу',
+    selectChatToStart: 'Виберіть чат для початку спілкування',
+    selectChatFromList: 'Виберіть чат зі списку зліва або створіть новий',
     
     // Пресети
     selectPreset: 'Оберіть пресет',
@@ -192,6 +269,7 @@ export const translations = {
     nameTooShort: 'Ім\'я повинно містити мінімум 2 символи',
     nameTooLong: 'Ім\'я не повинно перевищувати 50 символів',
     avatarUploaded: 'Аватар успішно завантажено',
+    languageChanged: 'Мову інтерфейсу змінено',
     avatarUploadError: 'Помилка завантаження аватара',
     onlyImagesAllowed: 'Дозволені тільки зображення',
     imageTooLarge: 'Розмір зображення не повинен перевищувати 2MB',
@@ -206,7 +284,79 @@ export const translations = {
     deletePreset: 'Видалити пресет?',
     confirmDeletePresetMessage: 'Ви впевнені, що хочете видалити цей пресет?',
     yes: 'Так',
-    no: 'Ні'
+    no: 'Ні',
+    
+    // Templates
+    messageTemplates: 'Шаблони повідомлень',
+    templateName: 'Назва шаблону',
+    enterTemplateName: 'Введіть назву шаблону',
+    templateText: 'Текст шаблону',
+    enterTemplateText: 'Введіть текст шаблону',
+    viewTemplate: 'Переглянути шаблон',
+    editTemplate: 'Редагувати шаблон',
+    deleteTemplate: 'Видалити шаблон',
+    deleteTemplateConfirm: 'Видалити шаблон?',
+    deleteTemplateDescription: 'Ви впевнені, що хочете видалити цей шаблон?',
+    viewTemplateTitle: 'Перегляд шаблону',
+    editTemplateTitle: 'Редагувати шаблон',
+    saveChanges: 'Зберегти зміни',
+    close: 'Закрити',
+    cancel: 'Скасувати',
+    
+    // New chat
+    createNewGroup: 'Створити нову групу',
+    groupName: 'Назва групи',
+    enterGroupName: 'Введіть назву групи',
+    groupAvatar: 'Аватарка групи',
+    participants: 'Учасники',
+    selectUsers: 'Виберіть користувачів',
+    create: 'Створити',
+    
+    // Preset
+    createNewPreset: 'Створити новий пресет',
+    presetName: 'Назва пресету',
+    enterPresetName: 'Наприклад: Amazon Electronics Store',
+    channels: 'Канали',
+    selectChannels: 'Виберіть канали',
+    stores: 'Магазини',
+    selectStores: 'Виберіть магазини',
+    emails: 'Email адреси',
+    selectEmails: 'Виберіть email адреси',
+    
+    // Language
+    language: 'Мова',
+    
+    // Avatar
+    changeAvatar: 'Змінити аватар',
+    addAvatar: 'Додати аватар',
+    
+    // Preset dropdown
+    selectPreset: 'Виберіть пресет',
+    addPreset: 'Додати пресет',
+    createPreset: 'Створити пресет',
+    
+    // Templates
+    addNewTemplate: 'Додати новий шаблон',
+    createTemplate: 'Створити шаблон',
+    messageTemplatesTooltip: 'Шаблони повідомлень',
+    attachFile: 'Прикріпити файл',
+    
+    // Time
+    now: 'Зараз',
+    minutesAgo: 'хв',
+    hoursAgo: 'год',
+    daysAgo: 'дн',
+    
+    // Chat actions
+    pinChat: 'Закріпити чат',
+    unpinChat: 'Відкріпити чат',
+    reply: 'Відповісти',
+    replyToMessage: 'Відповісти на повідомлення',
+    forward: 'Переслати',
+    forwardMessage: 'Переслати повідомлення',
+    participantsCount: 'Учасників',
+    translation: 'Переклад:',
+    translatingMessage: 'Перекладаємо повідомлення...'
   },
   
   en: {
@@ -222,6 +372,8 @@ export const translations = {
     enterMessage: 'Enter message...',
     minimize: 'Minimize chat',
     language: 'Translation language',
+    selectChatToStart: 'Select a chat to start communication',
+    selectChatFromList: 'Select a chat from the list on the left or create a new one',
     
     // Presets
     selectPreset: 'Select preset',
@@ -297,6 +449,7 @@ export const translations = {
     nameTooShort: 'Name must be at least 2 characters',
     nameTooLong: 'Name must not exceed 50 characters',
     avatarUploaded: 'Avatar uploaded successfully',
+    languageChanged: 'Interface language changed',
     avatarUploadError: 'Avatar upload error',
     onlyImagesAllowed: 'Only images are allowed',
     imageTooLarge: 'Image size must not exceed 2MB',
@@ -311,7 +464,79 @@ export const translations = {
     deletePreset: 'Delete preset?',
     confirmDeletePresetMessage: 'Are you sure you want to delete this preset?',
     yes: 'Yes',
-    no: 'No'
+    no: 'No',
+    
+    // Templates
+    messageTemplates: 'Message Templates',
+    templateName: 'Template Name',
+    enterTemplateName: 'Enter template name',
+    templateText: 'Template Text',
+    enterTemplateText: 'Enter template text',
+    viewTemplate: 'View Template',
+    editTemplate: 'Edit Template',
+    deleteTemplate: 'Delete Template',
+    deleteTemplateConfirm: 'Delete template?',
+    deleteTemplateDescription: 'Are you sure you want to delete this template?',
+    viewTemplateTitle: 'View Template',
+    editTemplateTitle: 'Edit Template',
+    saveChanges: 'Save Changes',
+    close: 'Close',
+    cancel: 'Cancel',
+    
+    // New chat
+    createNewGroup: 'Create New Group',
+    groupName: 'Group Name',
+    enterGroupName: 'Enter group name',
+    groupAvatar: 'Group Avatar',
+    participants: 'Participants',
+    selectUsers: 'Select users',
+    create: 'Create',
+    
+    // Preset
+    createNewPreset: 'Create New Preset',
+    presetName: 'Preset Name',
+    enterPresetName: 'For example: Amazon Electronics Store',
+    channels: 'Channels',
+    selectChannels: 'Select channels',
+    stores: 'Stores',
+    selectStores: 'Select stores',
+    emails: 'Email addresses',
+    selectEmails: 'Select email addresses',
+    
+    // Language
+    language: 'Language',
+    
+    // Avatar
+    changeAvatar: 'Change Avatar',
+    addAvatar: 'Add Avatar',
+    
+    // Preset dropdown
+    selectPreset: 'Select preset',
+    addPreset: 'Add preset',
+    createPreset: 'Create preset',
+    
+    // Templates
+    addNewTemplate: 'Add new template',
+    createTemplate: 'Create template',
+    messageTemplatesTooltip: 'Message templates',
+    attachFile: 'Attach file',
+    
+    // Time
+    now: 'Now',
+    minutesAgo: 'm',
+    hoursAgo: 'h',
+    daysAgo: 'd',
+    
+    // Chat actions
+    pinChat: 'Pin chat',
+    unpinChat: 'Unpin chat',
+    reply: 'Reply',
+    replyToMessage: 'Reply to message',
+    forward: 'Forward',
+    forwardMessage: 'Forward message',
+    participantsCount: 'Participants',
+    translation: 'Translation:',
+    translatingMessage: 'Translating message...'
   }
 }
 

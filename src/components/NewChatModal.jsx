@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Modal, Form, Input, Select, Tag, Space, Avatar, Button, Upload } from 'antd'
 import { UploadOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons'
+import { useTranslation } from '../hooks/useTranslation'
 
 
 const NewChatModal = ({ 
@@ -10,9 +11,11 @@ const NewChatModal = ({
   onCreateChat, 
   currentGroupParticipants = [],
   onAddParticipant,
-  onRemoveParticipant
+  onRemoveParticipant,
+  targetLanguage = 'ru'
 }) => {
   const [form] = Form.useForm()
+  const { t } = useTranslation(targetLanguage)
   const [groupAvatar, setGroupAvatar] = useState(null)
 
   const handleCreateChat = async () => {
@@ -93,29 +96,29 @@ const NewChatModal = ({
 
   return (
     <Modal
-      title="Создать новую группу"
+      title={t('createNewGroup')}
       open={visible}
       onCancel={onClose}
       footer={[
         <Button key="cancel" onClick={onClose}>
-          Отмена
+          {t('cancel')}
         </Button>,
         <Button key="create" type="primary" onClick={handleCreateChat}>
-          Создать
+          {t('create')}
         </Button>
       ]}
       width={500}
     >
       <Form form={form} layout="vertical">
         <Form.Item 
-          label="Название группы"
+          label={t('groupName')}
           name="chatName"
-          rules={[{ required: true, message: 'Введите название группы' }]}
+          rules={[{ required: true, message: t('enterGroupName') }]}
         >
-          <Input placeholder="Введите название группы" />
+          <Input placeholder={t('enterGroupName')} />
         </Form.Item>
 
-        <Form.Item label="Аватарка группы">
+        <Form.Item label={t('groupAvatar')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <Avatar 
               size={64} 
@@ -128,16 +131,16 @@ const NewChatModal = ({
                 icon={<PlusOutlined />}
                 size="small"
               >
-                {groupAvatar ? 'Изменить' : 'Добавить'}
+                {groupAvatar ? t('changeAvatar') : t('addAvatar')}
               </Button>
             </Upload>
           </div>
         </Form.Item>
         
-        <Form.Item label="Участники">
+        <Form.Item label={t('participants')}>
           <Select
             mode="multiple"
-            placeholder="Выберите пользователей"
+            placeholder={t('selectUsers')}
             value={currentGroupParticipants}
             onChange={(selectedUserIds) => {
               // Обновляем участников в родительском компоненте

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Select, Dropdown, Space, Tag, Modal, Popconfirm } from 'antd'
-import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, InboxOutlined, FileZipFilled, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, DeleteOutlined, TranslationOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Dropdown, Space, Tag, Modal, Popconfirm } from 'antd'
+import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, InboxOutlined, FileZipFilled, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import PresetModal from './PresetModal'
 import { useTranslation } from '../hooks/useTranslation'
 import './Sidebar.css'
@@ -28,7 +28,6 @@ const Sidebar = ({
   stores,
   emails,
   targetLanguage,
-  onLanguageChange,
   onShowProfileSettings,
   currentUser
 }) => {
@@ -70,13 +69,13 @@ const Sidebar = ({
     const days = Math.floor(diff / 86400000)
     
     if (minutes < 1) {
-      return 'сейчас'
+      return t('now')
     } else if (minutes < 60) {
-      return `${minutes}м`
+      return `${minutes}${t('minutesAgo')}`
     } else if (hours < 24) {
-      return `${hours}ч`
+      return `${hours}${t('hoursAgo')}`
     } else if (days < 7) {
-      return `${days}д`
+      return `${days}${t('daysAgo')}`
     } else {
       return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
     }
@@ -113,6 +112,19 @@ const Sidebar = ({
       default:
         return null
     }
+  }
+
+  // Функция для получения названия бренда из последнего сообщения Amazon
+  const getBrandName = (chat) => {
+    if (chat.platform === 'amazon' && chat.messages && chat.messages.length > 0) {
+      // Ищем последнее сообщение с brandName
+      const lastMessageWithBrand = [...chat.messages]
+        .reverse()
+        .find(message => message.brandName)
+      
+      return lastMessageWithBrand ? lastMessageWithBrand.brandName : null
+    }
+    return null
   }
 
   const getPresetChannelIcon = (channels) => {
@@ -264,21 +276,6 @@ const Sidebar = ({
         />
       </div>
 
-      <div style={{ padding: '0 16px 16px 16px' }}>
-        <Tooltip title={t('language')}>
-          <Select
-            value={targetLanguage}
-            onChange={onLanguageChange}
-            size="small"
-            style={{ width: '100%', marginBottom: '8px' }}
-            suffixIcon={<TranslationOutlined />}
-          >
-            <Select.Option value="ru">Русский</Select.Option>
-            <Select.Option value="uk">Українська</Select.Option>
-            <Select.Option value="en">English</Select.Option>
-          </Select>
-        </Tooltip>
-      </div>
       
       <div style={{ padding: '0 16px 16px 16px' }}>
         <Dropdown
@@ -317,12 +314,12 @@ const Sidebar = ({
               },
               {
                 key: 'add',
-                label: (
-                  <Space>
-                    <PlusOutlined />
-                    <span>Добавить пресет</span>
-                  </Space>
-                ),
+                  label: (
+                    <Space>
+                      <PlusOutlined />
+                      <span>{t('addPreset')}</span>
+                    </Space>
+                  ),
                 onClick: () => setShowPresetModal(true)
               }
             ]
@@ -345,7 +342,7 @@ const Sidebar = ({
                   <span>{selectedPreset.name}</span>
                 </>
               ) : (
-                <span>Выберите пресет</span>
+                <span>{t('selectPreset')}</span>
               )}
             </Space>
             <DownOutlined />
@@ -467,14 +464,25 @@ const Sidebar = ({
                     title={
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Text 
-                            strong 
-                            style={{ fontSize: '14px', cursor: 'pointer' }}
-              onClick={() => onChatSelect(chat.id, searchTerm)}
-            >
-                            {chat.name}
-                          </Text>
-                          {getPlatformIcon(chat.platform)}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Text 
+                              strong 
+                              style={{ fontSize: '14px', cursor: 'pointer' }}
+                              onClick={() => onChatSelect(chat.id, searchTerm)}
+                            >
+                              {chat.name}
+                            </Text>
+                            {getPlatformIcon(chat.platform)}
+                            {chat.platform === 'amazon' && getBrandName(chat) && (
+                              <Tag 
+                                size="small" 
+                                color="orange" 
+                                style={{ fontSize: '10px', margin: 0, padding: '0 4px' }}
+                              >
+                                {getBrandName(chat)}
+                              </Tag>
+                            )}
+                          </div>
               </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Text type="secondary" style={{ fontSize: '12px' }}>{lastMessageTime}</Text>
@@ -506,7 +514,7 @@ const Sidebar = ({
                               }}
                             />
                           </Tooltip>
-                          <Tooltip title={chat.isPinned ? 'Открепить чат' : 'Закрепить чат'}>
+                          <Tooltip title={chat.isPinned ? t('unpinChat') : t('pinChat')}>
                             <Button
                               type="text"
                               size="small"
@@ -546,6 +554,7 @@ const Sidebar = ({
           onCreatePreset={onCreatePreset}
           stores={stores}
           emails={emails}
+          targetLanguage={targetLanguage}
         />
       )}
 

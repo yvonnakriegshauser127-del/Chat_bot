@@ -109,7 +109,7 @@ const ChatWindow = ({
     if (chat.type === 'private') {
       return ''
     } else {
-      return `${chat.participants.length} участников`
+      return `${chat.participants.length} ${t('participantsCount')}`
     }
   }
 
@@ -169,9 +169,9 @@ const ChatWindow = ({
           <div className="welcome-screen">
             <MessageOutlined style={{ fontSize: '64px', color: '#d9d9d9' }} />
             <Typography.Title level={2} style={{ color: '#8c8c8c' }}>
-              Выберите чат для начала общения
+              {t('selectChatToStart')}
             </Typography.Title>
-            <Text type="secondary">Выберите чат из списка слева или создайте новый</Text>
+            <Text type="secondary">{t('selectChatFromList')}</Text>
           </div>
         </div>
       </Content>
@@ -318,7 +318,7 @@ const ChatWindow = ({
                   onKeyPress={handleKeyPress}
               prefix={
                 <Space>
-                  <Tooltip title="Шаблоны сообщений">
+                  <Tooltip title={t('messageTemplatesTooltip')}>
                     <Button 
                       type="text" 
                       size="small"
@@ -326,7 +326,7 @@ const ChatWindow = ({
                       onClick={onShowTemplates}
                     />
                   </Tooltip>
-                  <Tooltip title="Прикрепить файл">
+                  <Tooltip title={t('attachFile')}>
                     <Button 
                       type="text" 
                       size="small"
