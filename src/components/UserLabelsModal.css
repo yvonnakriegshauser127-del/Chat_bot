@@ -1,0 +1,33 @@
+/* Стили для модального окна управления ярлыками */
+.labels-scroll-container {
+  max-height: 320px; /* Примерно 8 ярлыков по 40px каждый */
+  overflow-y: auto;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+/* Кастомный скроллбар */
+.labels-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.labels-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.labels-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.labels-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Стили для Firefox */
+.labels-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}

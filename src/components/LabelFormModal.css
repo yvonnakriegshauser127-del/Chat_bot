@@ -1,0 +1,15 @@
+.palette-check {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Границы, максимально похожие на скриншот */
+.palette-grid {
+  border: 1px solid #c0c0c0;
+}
+
+

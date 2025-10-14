@@ -4,7 +4,8 @@ import {
   LinkOutlined, 
   TranslationOutlined,
   MessageOutlined,
-  SendOutlined
+  SendOutlined,
+  EyeInvisibleOutlined
 } from '@ant-design/icons'
 import { translationService } from '../services/translationService'
 import { useTranslation } from '../hooks/useTranslation'
@@ -13,7 +14,7 @@ import './StructuredMessage.css'
 
 const { Text, Paragraph } = Typography
 
-const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, activeSearchTerm = '' }) => {
+const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, activeSearchTerm = '' }) => {
   const [translatedText, setTranslatedText] = useState('')
   const [translatedLanguage, setTranslatedLanguage] = useState('')
   const [socialLinks, setSocialLinks] = useState([])
@@ -99,6 +100,12 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
   const handleForwardMessage = () => {
     if (onForwardMessage) {
       onForwardMessage(message)
+    }
+  }
+
+  const handleMarkAsUnread = () => {
+    if (onMarkAsUnread) {
+      onMarkAsUnread(message)
     }
   }
 
@@ -216,9 +223,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                   height: 'auto',
                   lineHeight: '1.2'
                 }}
-              >
-                {t('forward')}
-              </Button>
+              />
             </div>
           </div>
           <Avatar size="small" style={{ backgroundColor: '#1890ff' }}>
@@ -252,27 +257,31 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                 icon={<MessageOutlined />}
                 onClick={handleReplyToMessage}
                 title={t('replyToMessage')}
-              >
-                {t('reply')}
-              </Button>
+              />
               <Button 
                 type="text" 
                 size="small"
                 icon={<SendOutlined />}
                 onClick={handleForwardMessage}
                 title={t('forwardMessage')}
-              >
-                {t('forward')}
-              </Button>
+              />
               <Button 
                 type="text" 
                 size="small"
                 icon={<TranslationOutlined />}
                 onClick={handleShowTranslation}
                 loading={isTranslating}
-              >
-                {showTranslation ? t('hideTranslation') : t('showTranslation')}
-              </Button>
+                title={showTranslation ? t('hideTranslation') : t('showTranslation')}
+              />
+              {!isOwnMessage && (
+                <Button 
+                  type="text" 
+                  size="small"
+                  icon={<EyeInvisibleOutlined />}
+                  onClick={handleMarkAsUnread}
+                  title={t('markAsUnread')}
+                />
+              )}
             </Space>
           </div>
 

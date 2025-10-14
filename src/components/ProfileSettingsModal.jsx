@@ -31,9 +31,7 @@ const ProfileSettingsModal = ({
 
   // Отдельный useEffect для отслеживания изменений targetLanguage
   useEffect(() => {
-    console.log('ProfileSettingsModal: targetLanguage changed to:', targetLanguage)
     const newLanguage = targetLanguage || 'ru'
-    console.log('ProfileSettingsModal: setting selectedLanguage to:', newLanguage)
     setSelectedLanguage(newLanguage)
   }, [targetLanguage])
 
@@ -188,10 +186,8 @@ const ProfileSettingsModal = ({
           name="language"
           label={t('language')}
         >
-          {console.log('ProfileSettingsModal: rendering Select with selectedLanguage:', selectedLanguage)}
           <Select
             onChange={(value) => {
-              console.log('ProfileSettingsModal: language changed to:', value)
               setSelectedLanguage(value)
             }}
             style={{ width: '100%' }}

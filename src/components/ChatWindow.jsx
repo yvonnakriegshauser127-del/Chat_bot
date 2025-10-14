@@ -43,6 +43,7 @@ const ChatWindow = ({
   targetLanguage,
   onForwardMessage,
   onScrollToMessage,
+  onMarkAsUnread,
   onUpdateProfile,
   activeSearchTerm,
   searchResults,
@@ -261,6 +262,7 @@ const ChatWindow = ({
           onReplyToMessage={setReplyingTo}
           onForwardMessage={onForwardMessage}
           onScrollToMessage={onScrollToMessage}
+          onMarkAsUnread={onMarkAsUnread}
           activeSearchTerm={activeSearchTerm}
         />
             

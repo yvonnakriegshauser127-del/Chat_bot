@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden; /* Предотвращаем скролл всего сайдбара */
 }
 
 .sidebar-header {
@@ -19,16 +20,266 @@
 }
 
 .search-container {
-  padding: 16px;
+  padding: 0 16px 16px 16px; /* Отступы как в оригинале */
+  flex-shrink: 0; /* Предотвращаем сжатие */
+  display: flex;
+  align-items: center;
+}
+
+/* Стили для поля поиска */
+.search-container .ant-input {
+  border-radius: 20px !important; /* Более круглые углы */
+  height: 30px !important; /* Высота 30px */
+  border: 1px solid #d9d9d9 !important;
+  padding: 0 12px !important;
+  font-size: 14px !important;
+  box-shadow: none !important; /* Убираем тень по умолчанию */
+  outline: none !important; /* Убираем outline */
+}
+
+/* Убираем все возможные контуры и тени */
+.search-container .ant-input:hover {
+  border-color: #d9d9d9 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.search-container .ant-input:focus {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1) !important;
+  outline: none !important;
+}
+
+/* Дополнительные стили для полного переопределения */
+.search-container .ant-input-affix-wrapper {
+  border-radius: 20px !important;
+  height: 30px !important;
+  border: 1px solid #d9d9d9 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: #ffffff !important;
+}
+
+.search-container .ant-input-affix-wrapper:hover {
+  border-color: #d9d9d9 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.search-container .ant-input-affix-wrapper:focus,
+.search-container .ant-input-affix-wrapper-focused {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1) !important;
+  outline: none !important;
+}
+
+/* Убираем внутренний контур - стили для внутреннего input */
+.search-container .ant-input-affix-wrapper .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 12px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+.search-container .ant-input-affix-wrapper .ant-input:hover {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.search-container .ant-input-affix-wrapper .ant-input:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Стили для иконки поиска */
+.search-container .ant-input-prefix {
+  color: #999 !important;
+  margin-right: 8px !important;
+}
+
+.search-container .ant-input-suffix {
+  color: #999 !important;
+}
+
+/* Дополнительные стили для полного удаления внутренних контуров */
+.search-container .ant-input-affix-wrapper * {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.search-container .ant-input-affix-wrapper .ant-input-clear-icon {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.search-container .ant-input-affix-wrapper .ant-input-clear-icon:hover {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Стили для кнопки выбора пресета */
+.preset-dropdown .ant-btn {
+  border-radius: 20px !important;
+  height: 30px !important;
+  border: 1px solid #d9d9d9 !important;
+  padding: 4px 12px !important;
+  font-size: 14px !important;
+  background: #ffffff !important;
+  color: #666 !important;
+}
+
+/* Ensure dropdown menu stretches and action buttons can stick to the right */
+.preset-dropdown-overlay .ant-dropdown-menu {
+  min-width: 320px; /* give enough width so right edge is reachable */
+}
+
+.preset-dropdown-overlay .ant-dropdown-menu-item {
+  padding-left: 0 !important;
+  padding-right: 0 !important; /* remove padding so our row hits the edge */
+}
+
+.preset-dropdown .ant-btn:hover {
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+}
+
+.preset-dropdown .ant-btn:focus {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1) !important;
+}
+
+.chat-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Одинаковые отступы между секциями */
+  flex: 1; /* Раздел занимает доступную высоту */
+  min-height: 0; /* Даём внутреннему списку сжиматься */
 }
 
 .chat-list {
-  flex: 1;
   overflow-y: auto;
+  flex: 1; /* Занимает оставшееся место, исключая наложения */
+  min-height: 0; /* Позволяет списку сжиматься внутри flex-контейнера */
+}
+
+/* Кастомный скроллбар для списка чатов */
+.chat-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.chat-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Стили для Firefox */
+.chat-list {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
 }
 
 .chat-item {
   transition: background-color 0.3s;
+  min-height: 60px;
+  padding: 8px 16px !important;
+}
+
+.chat-item .ant-list-item-meta {
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.chat-item .ant-list-item-meta-title {
+  margin-bottom: 4px !important;
+  line-height: 1.2;
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.chat-item .ant-list-item-meta-description {
+  margin-bottom: 0 !important;
+  line-height: 1.2;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Стили для текста чата */
+.chat-item .ant-list-item-meta-title .ant-typography {
+  flex: 0 0 auto !important; /* Не растягивается, занимает только нужное место */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 3px; /* Отступ 3px между названием чата и иконкой */
+}
+
+/* Стили для последнего сообщения */
+.chat-item .ant-list-item-meta-description .ant-typography {
+  flex: 1 !important;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+/* Стили для кнопок действий */
+.chat-item .ant-list-item-meta-description .ant-btn {
+  flex-shrink: 0 !important;
+  margin-left: 4px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  min-width: 20px;
+}
+
+/* Стили для иконок платформ */
+.chat-item .ant-list-item-meta-title .anticon {
+  flex-shrink: 0 !important;
+  margin-left: 0; /* Убираем отступ слева */
+  margin-right: 0; /* Убираем отступ справа */
+  font-size: 14px;
+}
+
+/* Стили для тегов брендов */
+.chat-item .ant-list-item-meta-title .ant-tag {
+  flex-shrink: 0 !important;
+  margin-left: 0; /* Убираем отступ слева */
+  margin-right: 0;
+}
+
+/* Стили для времени и счетчика */
+.chat-item .ant-list-item-meta-title .ant-typography:last-child,
+.chat-item .ant-list-item-meta-title .ant-badge {
+  flex-shrink: 0 !important;
+  margin-left: 8px; /* Отступ от иконок/тегов брендов */
 }
 
 .chat-item:hover {
@@ -61,6 +312,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  flex-shrink: 0; /* Предотвращаем сжатие */
+  padding: 8px 16px; /* Добавляем padding для выравнивания */
+  min-height: 24px; /* Минимальная высота вместо фиксированной */
+  align-items: center;
 }
 
 .section-buttons .ant-btn {
@@ -68,5 +323,78 @@
   padding: 4px 8px;
   height: auto;
   min-width: auto;
+}
+
+/* Секция ярлыков */
+.labels-section {
+  margin-bottom: 0; /* Убираем нижний отступ */
+  padding: 12px 16px;
+  background: #ffffff; /* Белый фон вместо серого градиента */
+  border-radius: 8px;
+  margin-left: 0;
+  margin-right: 0;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Предотвращаем сжатие */
+}
+
+/* Свернутое состояние секции ярлыков */
+.labels-section.collapsed {
+  padding: 2px 16px; /* Устанавливаем общую высоту контейнера 30px */
+  height: 30px;
+  display: flex;
+  align-items: center;
+  border-radius: 20px !important; /* Более круглые углы */
+}
+
+/* Стили для заголовка в свернутом состоянии */
+.labels-section.collapsed .labels-section-title {
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+.labels-section:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.labels-section-title {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 10px;
+  color: #595959;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.labels-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.label-button {
+  margin-bottom: 4px;
+  border-radius: 12px;
+  font-size: 12px;
+  height: 28px;
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: all 0.2s ease;
+}
+
+.label-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
+}
+
+/* Стили для кнопки меню ярлыка */
+.label-button-wrapper:hover .label-menu-button {
+  opacity: 1 !important;
+}
+
+.label-menu-button:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.06);
 }
 

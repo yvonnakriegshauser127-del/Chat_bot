@@ -8,25 +8,24 @@ import TemplatesModal from './components/TemplatesModal'
 import GroupParticipantsModal from './components/GroupParticipantsModal'
 import ForwardMessageModal from './components/ForwardMessageModal'
 import ProfileSettingsModal from './components/ProfileSettingsModal'
-import { testUsers, testTemplates, initialChats, testStores, testEmails, testPresets } from './data/testData'
+import { testUsers, testTemplates, initialChats, testStores, testEmails, testPresets, availableLabels, groupFilters } from './data/testData'
 import { localStorageUtils } from './utils/localStorage'
 import './App.css'
 
 function App() {
   const [chats, setChats] = useState(initialChats)
   const [currentChatId, setCurrentChatId] = useState(null)
-  const [users] = useState(testUsers)
+  const [users, setUsers] = useState(testUsers)
   const [templates, setTemplates] = useState(testTemplates)
+  const [labels, setLabels] = useState(availableLabels)
+  const [groups, setGroups] = useState(groupFilters)
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState(null)
   const [presets, setPresets] = useState(testPresets)
   const [selectedPreset, setSelectedPreset] = useState(null)
   const [stores] = useState(testStores)
   const [emails] = useState(testEmails)
   const [searchTerm, setSearchTerm] = useState('')
-  const [targetLanguage, setTargetLanguage] = useState(() => {
-    const language = localStorageUtils.getLanguage()
-    console.log('App: initial targetLanguage:', language)
-    return language
-  })
+  const [targetLanguage, setTargetLanguage] = useState(() => localStorageUtils.getLanguage())
   const [showNewChatModal, setShowNewChatModal] = useState(false)
   const [showTemplatesModal, setShowTemplatesModal] = useState(false)
   const [showParticipantsModal, setShowParticipantsModal] = useState(false)
@@ -43,9 +42,144 @@ function App() {
 
   // Обработка изменения языка
   const handleLanguageChange = (newLanguage) => {
-    console.log('App: handleLanguageChange called with:', newLanguage)
     setTargetLanguage(newLanguage)
     localStorageUtils.setLanguage(newLanguage)
+  }
+
+  // Функция для проверки, соответствует ли пользователь условиям фильтра группы
+  const userMatchesGroupFilter = (user, groupFilter) => {
+    if (!groupFilter || !groupFilter.conditions) return true
+    
+    const { labels: requiredLabels, matchType } = groupFilter.conditions
+    const userLabels = user.labels || []
+    
+    if (matchType === 'all') {
+      // Пользователь должен иметь ВСЕ требуемые ярлыки
+      return requiredLabels.every(label => userLabels.includes(label))
+    } else {
+      // Пользователь должен иметь ХОТЯ БЫ ОДИН требуемый ярлык
+      return requiredLabels.some(label => userLabels.includes(label))
+    }
+  }
+
+  // Функция для получения чатов, отфильтрованных по группе
+  const getFilteredChatsByGroup = (groupFilter) => {
+    if (!groupFilter) return chats
+    
+    return chats.filter(chat => {
+      // Все чаты теперь личные, проверяем ярлыки собеседника
+      const participantId = chat.participants.find(id => id !== currentUser.id)
+      const participant = users.find(u => u.id === participantId)
+      
+      if (participant) {
+        return userMatchesGroupFilter(participant, groupFilter)
+      }
+      
+      return false
+    })
+  }
+
+  // Функция для обновления ярлыков пользователя
+  const updateUserLabels = (userId, newLabels) => {
+    setUsers(prevUsers =>
+      prevUsers.map(user =>
+        user.id === userId
+          ? { ...user, labels: newLabels }
+          : user
+      )
+    )
+  }
+
+  // Функция для создания нового ярлыка
+  const createNewLabel = (newLabel) => {
+    // Добавляем ярлык в список доступных ярлыков
+    setLabels(prevLabels => [...prevLabels, {
+      id: newLabel.id,
+      name: newLabel.name,
+      color: newLabel.color,
+      textColor: newLabel.textColor
+    }])
+    
+    // Добавляем группу-фильтр для этого ярлыка
+    setGroups(prevGroups => [...prevGroups, {
+      id: newLabel.id,
+      name: newLabel.name,
+      description: `${newLabel.name} контакты`,
+      color: newLabel.color,
+      textColor: newLabel.textColor,
+      conditions: {
+        labels: [newLabel.id],
+        matchType: 'any'
+      }
+    }])
+  }
+
+  // Функция для редактирования ярлыка
+  const updateLabel = (updatedLabel) => {
+    // Обновляем ярлык в списке доступных ярлыков
+    setLabels(prevLabels =>
+      prevLabels.map(label =>
+        label.id === updatedLabel.id
+          ? {
+              ...label,
+              name: updatedLabel.name,
+              color: updatedLabel.color,
+              textColor: updatedLabel.textColor
+            }
+          : label
+      )
+    )
+    
+    // Обновляем группу-фильтр для этого ярлыка
+    setGroups(prevGroups =>
+      prevGroups.map(group =>
+        group.id === updatedLabel.id
+          ? {
+              ...group,
+              name: updatedLabel.name,
+              color: updatedLabel.color,
+              textColor: updatedLabel.textColor,
+              description: `${updatedLabel.name} контакты`
+            }
+          : group
+      )
+    )
+  }
+
+  // Функция для удаления ярлыка
+  const deleteLabel = (labelId) => {
+    // Удаляем ярлык из списка доступных ярлыков
+    setLabels(prevLabels => prevLabels.filter(label => label.id !== labelId))
+    
+    // Удаляем группу-фильтр для этого ярлыка
+    setGroups(prevGroups => prevGroups.filter(group => group.id !== labelId))
+    
+    // Если удаляемый ярлык был выбран, сбрасываем выбор
+    if (selectedGroupFilter?.id === labelId) {
+      setSelectedGroupFilter(null)
+    }
+    
+    // Удаляем этот ярлык у всех пользователей
+    setUsers(prevUsers =>
+      prevUsers.map(user => ({
+        ...user,
+        labels: user.labels ? user.labels.filter(label => label !== labelId) : []
+      }))
+    )
+  }
+
+  // Функция для сохранения ярлыка в пресет
+  const saveLabelToPreset = (labelId, presetId) => {
+    setPresets(prevPresets =>
+      prevPresets.map(preset =>
+        preset.id === presetId
+          ? {
+              ...preset,
+              labels: preset.labels ? [...preset.labels, labelId] : [labelId]
+            }
+          : preset
+      )
+    )
   }
 
   // Фильтрация чатов по поиску (будет выполняться в Sidebar)
@@ -372,7 +506,15 @@ function App() {
 
   // Функции для работы с пресетами
   const createPreset = (presetData) => {
-    setPresets(prev => [...prev, presetData])
+    if (presetData.id && presets.find(p => p.id === presetData.id)) {
+      // Редактирование существующего пресета
+      setPresets(prev => prev.map(preset => 
+        preset.id === presetData.id ? presetData : preset
+      ))
+    } else {
+      // Создание нового пресета
+      setPresets(prev => [...prev, presetData])
+    }
   }
 
   const deletePreset = (presetId) => {
@@ -610,6 +752,16 @@ function App() {
             targetLanguage={targetLanguage}
             onShowProfileSettings={() => setShowProfileModal(true)}
             currentUser={currentUser}
+            labels={labels}
+            groups={groups}
+            selectedGroupFilter={selectedGroupFilter}
+            onGroupFilterSelect={setSelectedGroupFilter}
+            onUpdateUserLabels={updateUserLabels}
+            onCreateLabel={createNewLabel}
+            onUpdateLabel={updateLabel}
+            onDeleteLabel={deleteLabel}
+            onSaveLabelToPreset={saveLabelToPreset}
+            getFilteredChatsByGroup={getFilteredChatsByGroup}
           />
         )}
 

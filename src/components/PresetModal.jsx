@@ -4,29 +4,45 @@ import { PlusOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOu
 import { useTranslation } from '../hooks/useTranslation'
 
 
-const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetLanguage = 'ru' }) => {
+const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels = [], targetLanguage = 'ru', initialValues = null, isEdit = false }) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const { t } = useTranslation(targetLanguage)
+
+  // Инициализация формы при редактировании
+  React.useEffect(() => {
+    if (visible && initialValues && isEdit) {
+      form.setFieldsValue({
+        name: initialValues.name,
+        channels: initialValues.channels || [],
+        stores: initialValues.stores || [],
+        emails: initialValues.emails || [],
+        labels: initialValues.labels || []
+      })
+    } else if (visible && !isEdit) {
+      form.resetFields()
+    }
+  }, [visible, initialValues, isEdit, form])
 
   const handleSubmit = async () => {
     try {
       setLoading(true)
       const values = await form.validateFields()
       
-      const newPreset = {
-        id: Date.now(),
+      const presetData = {
+        id: isEdit ? initialValues.id : Date.now(),
         name: values.name,
         channels: values.channels,
         stores: values.stores,
         emails: values.emails,
-        createdAt: new Date()
+        labels: values.labels || [],
+        createdAt: isEdit ? initialValues.createdAt : new Date()
       }
       
-      onCreatePreset(newPreset)
+      onCreatePreset(presetData)
       form.resetFields()
       onClose()
-      message.success('Пресет успешно создан!')
+      message.success(isEdit ? 'Пресет успешно обновлен!' : 'Пресет успешно создан!')
     } catch (error) {
       console.error('Validation failed:', error)
     } finally {
@@ -41,7 +57,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
 
   return (
     <Modal
-      title={t('createNewPreset')}
+      title={isEdit ? t('editPreset') : t('createNewPreset')}
       open={visible}
       onCancel={handleCancel}
       footer={[
@@ -49,7 +65,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
           {t('cancel')}
         </Button>,
         <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
-          {t('createPreset')}
+          {isEdit ? t('saveChanges') : t('createPreset')}
         </Button>
       ]}
       width={500}
@@ -64,7 +80,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
           label={t('presetName')}
           rules={[
             { required: true, message: t('enterPresetName') },
-            { min: 2, message: t('nameTooShort') }
+            { min: 1, message: t('nameTooShort') }
           ]}
         >
           <Input placeholder={t('enterPresetName')} />
@@ -73,13 +89,18 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
         <Form.Item
           name="channels"
           label={t('channels')}
-          rules={[{ required: true, message: t('selectChannels') }]}
         >
           <Select 
             mode="multiple" 
             placeholder={t('selectChannels')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
+            showSearch
+            filterOption={(input, option) => {
+              const searchText = input.toLowerCase()
+              const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
+              return optionText.includes(searchText)
+            }}
             tagRender={({ label, value, closable, onClose }) => {
               const getChannelIcon = (channel) => {
                 switch (channel) {
@@ -103,9 +124,12 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
                   gap: '4px',
                   background: '#f0f0f0',
                   border: '1px solid #d9d9d9',
-                  borderRadius: '4px',
+                  borderRadius: '12px',
                   padding: '2px 8px',
-                  margin: '2px'
+                  margin: '2px',
+                  fontSize: '12px',
+                  height: '28px',
+                  transition: 'all 0.2s ease'
                 }}>
                   {getChannelIcon(value)}
                   <span>{label}</span>
@@ -131,13 +155,18 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
         <Form.Item
           name="stores"
           label={t('stores')}
-          rules={[{ required: true, message: t('selectStores') }]}
         >
           <Select 
             mode="multiple" 
             placeholder={t('selectStores')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
+            showSearch
+            filterOption={(input, option) => {
+              const searchText = input.toLowerCase()
+              const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
+              return optionText.includes(searchText)
+            }}
             tagRender={({ label, value, closable, onClose }) => (
               <div style={{ 
                 display: 'inline-flex', 
@@ -145,9 +174,12 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
                 gap: '4px',
                 background: '#f0f0f0',
                 border: '1px solid #d9d9d9',
-                borderRadius: '4px',
+                borderRadius: '12px',
                 padding: '2px 8px',
-                margin: '2px'
+                margin: '2px',
+                fontSize: '12px',
+                height: '28px',
+                transition: 'all 0.2s ease'
               }}>
                 <span>🏪</span>
                 <span>{label}</span>
@@ -173,15 +205,18 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
         <Form.Item
           name="emails"
           label={t('emails')}
-          rules={[
-            { required: true, message: t('selectEmails') }
-          ]}
         >
           <Select 
             mode="multiple" 
             placeholder={t('selectEmails')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
+            showSearch
+            filterOption={(input, option) => {
+              const searchText = input.toLowerCase()
+              const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
+              return optionText.includes(searchText)
+            }}
             tagRender={({ label, value, closable, onClose }) => (
               <div style={{ 
                 display: 'inline-flex', 
@@ -189,9 +224,12 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
                 gap: '4px',
                 background: '#f0f0f0',
                 border: '1px solid #d9d9d9',
-                borderRadius: '4px',
+                borderRadius: '12px',
                 padding: '2px 8px',
-                margin: '2px'
+                margin: '2px',
+                fontSize: '12px',
+                height: '28px',
+                transition: 'all 0.2s ease'
               }}>
                 <span>📧</span>
                 <span>{label}</span>
@@ -209,6 +247,64 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, targetL
             {emails.map(email => (
               <Select.Option key={email.id} value={email.address}>
                 {email.address}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="labels"
+          label={t('labels')}
+        >
+          <Select 
+            mode="multiple" 
+            placeholder={t('selectLabels')}
+            style={{ width: '100%' }}
+            maxTagCount="responsive"
+            showSearch
+            filterOption={(input, option) => {
+              const searchText = input.toLowerCase()
+              const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
+              return optionText.includes(searchText)
+            }}
+            tagRender={({ label, value, closable, onClose }) => {
+              // На некоторых данных value может приходить как name. Делаем устойчивый поиск
+              const selectedLabel =
+                labels.find(l => l.id === value) ||
+                labels.find(l => l.name === value) ||
+                labels.find(l => l.name === label)
+              return (
+                <div style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '4px',
+                  background: '#ffffff', // Белый фон
+                  color: selectedLabel?.textColor || '#000000', // Цвет текста из настроек ярлыка
+                  border: `1px solid ${selectedLabel?.color || '#d9d9d9'}`, // Цвет бордера из настроек ярлыка
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  margin: '2px',
+                  fontSize: '12px',
+                  height: '28px',
+                  transition: 'all 0.2s ease',
+                  cursor: 'default'
+                }}>
+                  <span>{label}</span>
+                  {closable && (
+                    <span 
+                      onClick={onClose}
+                      style={{ cursor: 'pointer', marginLeft: '4px' }}
+                    >
+                      ×
+                    </span>
+                  )}
+                </div>
+              )
+            }}
+          >
+            {labels.map(label => (
+              <Select.Option key={label.id} value={label.id}>
+                {label.name}
               </Select.Option>
             ))}
           </Select>
