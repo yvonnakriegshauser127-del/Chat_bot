@@ -85,7 +85,7 @@ const textColors = labelColors
 const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValues = null, isEdit = false }) => {
   const { t } = useTranslation(targetLanguage)
   const [form] = Form.useForm()
-  const [selectedColor, setSelectedColor] = useState(initialValues?.color || '#1890ff')
+  const [selectedColor, setSelectedColor] = useState(initialValues?.color || '#3c78d8')
   const [selectedTextColor, setSelectedTextColor] = useState(initialValues?.textColor || '#000000')
   const [labelName, setLabelName] = useState(initialValues?.name || '')
 
@@ -96,12 +96,12 @@ const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValue
         name: initialValues.name
       })
       setSelectedColor(initialValues.color)
-      setSelectedTextColor(initialValues.textColor || '#ffffff')
+      setSelectedTextColor(initialValues.textColor || '#000000')
       setLabelName(initialValues.name)
     } else if (visible && !initialValues) {
       form.resetFields()
-      setSelectedColor('#1890ff')
-      setSelectedTextColor('#ffffff')
+      setSelectedColor('#3c78d8')
+      setSelectedTextColor('#000000')
       setLabelName('')
     }
   }, [visible, initialValues, form])
@@ -119,8 +119,8 @@ const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValue
       
       onSave(labelData)
       form.resetFields()
-      setSelectedColor('#1890ff')
-      setSelectedTextColor('#ffffff')
+      setSelectedColor('#3c78d8')
+      setSelectedTextColor('#000000')
       onClose()
     } catch (error) {
       console.error('Validation failed:', error)
@@ -129,8 +129,8 @@ const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValue
 
   const handleCancel = () => {
     form.resetFields()
-    setSelectedColor('#1890ff')
-    setSelectedTextColor('#ffffff')
+    setSelectedColor('#3c78d8')
+    setSelectedTextColor('#000000')
     setLabelName('')
     onClose()
   }
