@@ -99,6 +99,8 @@ export const translations = {
     imageTooLarge: 'Размер изображения не должен превышать 2MB',
     profileUpdated: 'Профиль обновлен',
     save: 'Сохранить',
+    changeSidebarWidth: 'Изменить ширину',
+    lockSidebarWidth: 'Зафиксировать ширину',
     
     // Создание ярлыков
     createNewLabel: 'Создать новый ярлык',
@@ -309,6 +311,8 @@ export const translations = {
     imageTooLarge: 'Розмір зображення не повинен перевищувати 2MB',
     profileUpdated: 'Профіль оновлено',
     save: 'Зберегти',
+    changeSidebarWidth: 'Змінити ширину',
+    lockSidebarWidth: 'Зафіксувати ширину',
     
     // Створення ярликів
     createNewLabel: 'Створити новий ярлик',
@@ -519,6 +523,8 @@ export const translations = {
     imageTooLarge: 'Image size must not exceed 2MB',
     profileUpdated: 'Profile updated',
     save: 'Save',
+    changeSidebarWidth: 'Change width',
+    lockSidebarWidth: 'Lock width',
     
     // Create labels
     createNewLabel: 'Create new label',

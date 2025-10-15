@@ -200,12 +200,8 @@ function App() {
     setCurrentChatId(chatId)
     setIsMinimized(false)
     
-    // Сбрасываем счетчик непрочитанных
-    setChats(prevChats => 
-      prevChats.map(chat => 
-        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-      )
-    )
+    // НЕ сбрасываем счетчик непрочитанных автоматически
+    // Счетчик будет обновляться по мере прочтения сообщений
     
     // Если есть поисковый запрос, находим все сообщения с этим текстом
     if (searchTerm) {
@@ -232,6 +228,59 @@ function App() {
       setSearchResults([])
       setCurrentSearchIndex(0)
     }
+  }
+
+  // Пометка сообщения как прочитанного
+  const markMessageAsRead = (messageId) => {
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        const updatedMessages = chat.messages.map(message => 
+          message.id === messageId ? { ...message, read: true } : message
+        )
+        
+        // Пересчитываем количество непрочитанных сообщений
+        const unreadCount = updatedMessages.filter(msg => !msg.read && msg.senderId !== currentUser?.id).length
+        
+        return {
+          ...chat,
+          messages: updatedMessages,
+          unreadCount: unreadCount
+        }
+      })
+    )
+  }
+
+  // Пометка сообщения как непрочитанного
+  const markMessageAsUnread = (messageId) => {
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        const updatedMessages = chat.messages.map(message => 
+          message.id === messageId ? { ...message, read: false } : message
+        )
+        
+        // Пересчитываем количество непрочитанных сообщений
+        const unreadCount = updatedMessages.filter(msg => !msg.read && msg.senderId !== currentUser?.id).length
+        
+        return {
+          ...chat,
+          messages: updatedMessages,
+          unreadCount: unreadCount
+        }
+      })
+    )
+  }
+
+  // Функция для пересчета количества непрочитанных сообщений в чате
+  const recalculateUnreadCount = (chatId) => {
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        if (chat.id === chatId) {
+          const unreadCount = chat.messages.filter(msg => !msg.read && msg.senderId !== currentUser?.id).length
+          return { ...chat, unreadCount }
+        }
+        return chat
+      })
+    )
   }
 
   // Отправка сообщения
@@ -317,8 +366,10 @@ function App() {
           ? { 
               ...chat, 
               messages: [...chat.messages, responseMessage],
-              // Увеличиваем счетчик непрочитанных только если чат не активен
-              unreadCount: chatId === currentChatId ? (chat.unreadCount || 0) : (chat.unreadCount || 0) + 1
+              // Пересчитываем количество непрочитанных сообщений
+              unreadCount: chatId === currentChatId ? 
+                chat.messages.filter(msg => !msg.read && msg.senderId !== currentUser?.id).length :
+                (chat.unreadCount || 0) + 1
             }
           : chat
       )
@@ -568,8 +619,10 @@ function App() {
           ? { 
               ...chat, 
               messages: [...chat.messages, forwardedMessageData],
-              // Увеличиваем счетчик непрочитанных только если целевой чат не активен
-              unreadCount: targetChatId === currentChatId ? (chat.unreadCount || 0) : (chat.unreadCount || 0) + 1
+              // Пересчитываем количество непрочитанных сообщений
+              unreadCount: targetChatId === currentChatId ? 
+                chat.messages.filter(msg => !msg.read && msg.senderId !== currentUser?.id).length :
+                (chat.unreadCount || 0) + 1
             }
           : chat
       )
@@ -778,6 +831,8 @@ function App() {
           targetLanguage={targetLanguage}
           onForwardMessage={handleForwardMessage}
           onScrollToMessage={scrollToMessage}
+          onMarkAsRead={markMessageAsRead}
+          onMarkAsUnread={markMessageAsUnread}
           onUpdateProfile={updateUserProfile}
           activeSearchTerm={activeSearchTerm}
           searchResults={searchResults}

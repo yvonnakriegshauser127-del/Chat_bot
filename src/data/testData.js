@@ -1,12 +1,12 @@
 // Доступные ярлыки для пользователей
 export const availableLabels = [
-  { id: 'work', name: 'Работа', color: '#1890ff', textColor: '#ffffff' },
-  { id: 'personal', name: 'Личное', color: '#52c41a', textColor: '#ffffff' },
-  { id: 'urgent', name: 'Срочно', color: '#ff4d4f', textColor: '#ffffff' },
+  { id: 'work', name: 'Работа', color: '#1890ff', textColor: '#000000' },
+  { id: 'personal', name: 'Личное', color: '#52c41a', textColor: '#000000' },
+  { id: 'urgent', name: 'Срочно', color: '#ff4d4f', textColor: '#000000' },
   { id: 'vip', name: 'VIP', color: '#faad14', textColor: '#000000' },
-  { id: 'support', name: 'Поддержка', color: '#722ed1', textColor: '#ffffff' },
-  { id: 'marketing', name: 'Маркетинг', color: '#13c2c2', textColor: '#ffffff' },
-  { id: 'sales', name: 'Продажи', color: '#eb2f96', textColor: '#ffffff' }
+  { id: 'support', name: 'Поддержка', color: '#722ed1', textColor: '#000000' },
+  { id: 'marketing', name: 'Маркетинг', color: '#13c2c2', textColor: '#000000' },
+  { id: 'sales', name: 'Продажи', color: '#eb2f96', textColor: '#000000' }
 ]
 
 export const testUsers = [
@@ -32,7 +32,7 @@ export const groupFilters = [
     name: 'Работа',
     description: 'Рабочие контакты',
     color: '#1890ff',
-    textColor: '#ffffff',
+    textColor: '#000000',
     conditions: {
       labels: ['work'],
       matchType: 'any'
@@ -43,7 +43,7 @@ export const groupFilters = [
     name: 'Личное',
     description: 'Личные контакты',
     color: '#52c41a',
-    textColor: '#ffffff',
+    textColor: '#000000',
     conditions: {
       labels: ['personal'],
       matchType: 'any'
@@ -54,7 +54,7 @@ export const groupFilters = [
     name: 'Срочно',
     description: 'Требуют немедленного внимания',
     color: '#ff4d4f',
-    textColor: '#ffffff',
+    textColor: '#000000',
     conditions: {
       labels: ['urgent'],
       matchType: 'any'
@@ -76,7 +76,7 @@ export const groupFilters = [
     name: 'Поддержка',
     description: 'Служба поддержки',
     color: '#722ed1',
-    textColor: '#ffffff',
+    textColor: '#000000',
     conditions: {
       labels: ['support'],
       matchType: 'any'
@@ -87,7 +87,7 @@ export const groupFilters = [
     name: 'Маркетинг',
     description: 'Маркетинговые контакты',
     color: '#13c2c2',
-    textColor: '#ffffff',
+    textColor: '#000000',
     conditions: {
       labels: ['marketing'],
       matchType: 'any'
@@ -98,7 +98,7 @@ export const groupFilters = [
     name: 'Продажи',
     description: 'Клиенты и партнеры',
     color: '#eb2f96',
-    textColor: '#ffffff',
+    textColor: '#000000',
     conditions: {
       labels: ['sales'],
       matchType: 'any'
@@ -135,7 +135,7 @@ export const testPresets = [
     id: 1,
     name: 'Amazon Electronics',
     channels: ['amazon'],
-    stores: [1],
+    stores: ['Amazon Electronics'],
     emails: ['support@company.com'],
     labels: ['sales'],
     createdAt: new Date(Date.now() - 86400000)
@@ -144,7 +144,7 @@ export const testPresets = [
     id: 2,
     name: 'Instagram Fashion',
     channels: ['instagram'],
-    stores: [2],
+    stores: ['Instagram Fashion'],
     emails: ['marketing@company.com'],
     labels: ['marketing'],
     createdAt: new Date(Date.now() - 172800000)
@@ -153,7 +153,7 @@ export const testPresets = [
     id: 3,
     name: 'Multi-Channel Marketing',
     channels: ['amazon', 'instagram', 'email'],
-    stores: [1, 2, 3],
+    stores: ['Amazon Electronics', 'Instagram Fashion', 'TikTok Viral Campaign'],
     emails: ['marketing@company.com', 'sales@company.com'],
     labels: ['marketing', 'sales'],
     createdAt: new Date(Date.now() - 259200000)
@@ -162,7 +162,7 @@ export const testPresets = [
     id: 4,
     name: 'TikTok Viral Campaign',
     channels: ['tiktok'],
-    stores: [1, 2],
+    stores: ['TikTok Viral Campaign'],
     emails: ['marketing@company.com'],
     labels: ['marketing'],
     createdAt: new Date(Date.now() - 345600000)
@@ -180,6 +180,7 @@ export const initialChats = [
     isPinned: false,
     isPinned: false,
     platform: 'email',
+    email: 'anna.petrova@company.com',
     messages: [
       {
         id: 1,
@@ -262,6 +263,7 @@ export const initialChats = [
     isFavorite: false,
     isArchived: true,
     platform: 'amazon',
+    brandName: 'TechGear Pro',
     messages: [
       {
         id: 7,
@@ -294,6 +296,7 @@ export const initialChats = [
     isArchived: false,
     isPinned: false,
     platform: 'amazon',
+    brandName: 'Amazon Electronics',
     messages: [
       {
         id: 10,
@@ -319,6 +322,7 @@ export const initialChats = [
     isArchived: false,
     isPinned: false,
     platform: 'tiktok',
+    brandName: 'TikTok Viral Campaign',
     messages: [
       {
         id: 12,
@@ -343,6 +347,7 @@ export const initialChats = [
     isArchived: false,
     isPinned: false,
     platform: 'amazon',
+    brandName: 'NYCHKA Store',
     messages: [
       {
         id: 11,
@@ -376,6 +381,7 @@ export const initialChats = [
     isArchived: false,
     isPinned: false,
     platform: 'amazon',
+    brandName: 'TechGear Pro',
     messages: [
       {
         id: 13,

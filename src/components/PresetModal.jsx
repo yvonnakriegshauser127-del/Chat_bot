@@ -12,22 +12,34 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
   // Инициализация формы при редактировании
   React.useEffect(() => {
     if (visible && initialValues && isEdit) {
+      // Фильтруем ярлыки, оставляя только существующие
+      const existingLabelIds = labels.map(label => label.id)
+      const validLabels = (initialValues.labels || []).filter(labelId => 
+        existingLabelIds.includes(labelId)
+      )
+      
       form.setFieldsValue({
         name: initialValues.name,
         channels: initialValues.channels || [],
         stores: initialValues.stores || [],
         emails: initialValues.emails || [],
-        labels: initialValues.labels || []
+        labels: validLabels
       })
     } else if (visible && !isEdit) {
       form.resetFields()
     }
-  }, [visible, initialValues, isEdit, form])
+  }, [visible, initialValues, isEdit, form, labels])
 
   const handleSubmit = async () => {
     try {
       setLoading(true)
       const values = await form.validateFields()
+      
+      // Фильтруем ярлыки, оставляя только существующие
+      const existingLabelIds = labels.map(label => label.id)
+      const validLabels = (values.labels || []).filter(labelId => 
+        existingLabelIds.includes(labelId)
+      )
       
       const presetData = {
         id: isEdit ? initialValues.id : Date.now(),
@@ -35,7 +47,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
         channels: values.channels,
         stores: values.stores,
         emails: values.emails,
-        labels: values.labels || [],
+        labels: validLabels,
         createdAt: isEdit ? initialValues.createdAt : new Date()
       }
       

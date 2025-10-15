@@ -9,18 +9,31 @@ import {
 } from '@ant-design/icons'
 import { translationService } from '../services/translationService'
 import { useTranslation } from '../hooks/useTranslation'
+import { useMessageReadStatus } from '../hooks/useMessageReadStatus'
 import MessageText from './MessageText'
 import './StructuredMessage.css'
 
 const { Text, Paragraph } = Typography
 
-const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, activeSearchTerm = '' }) => {
+const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isFirstUnread = false, hasScrolledToUnread = false }) => {
   const [translatedText, setTranslatedText] = useState('')
   const [translatedLanguage, setTranslatedLanguage] = useState('')
   const [socialLinks, setSocialLinks] = useState([])
   const [isTranslating, setIsTranslating] = useState(false)
   const [showTranslation, setShowTranslation] = useState(false)
   const { t } = useTranslation(targetLanguage)
+
+  // Определяем, является ли сообщение собственным
+  const isOwnMessage = message.senderId === currentUser?.id
+
+  // Хук для отслеживания видимости сообщения
+  const { messageRef, setManuallyChanged } = useMessageReadStatus(
+    message.id,
+    message.read || false,
+    onMarkAsRead,
+    isOwnMessage,
+    hasScrolledToUnread
+  )
 
   // Инъекция CSS стилей для предотвращения разбивания слов
   useEffect(() => {
@@ -105,7 +118,9 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
 
   const handleMarkAsUnread = () => {
     if (onMarkAsUnread) {
-      onMarkAsUnread(message)
+      // Устанавливаем флаг ручного изменения статуса
+      setManuallyChanged(true)
+      onMarkAsUnread(message.id)
     }
   }
 
@@ -127,7 +142,6 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
     return user?.avatar || '👤'
   }
 
-  const isOwnMessage = message.senderId === currentUser.id
   const isSystemMessage = message.isSystemMessage
 
   // Специальная обработка системных сообщений
@@ -235,7 +249,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
   }
 
   return (
-    <div id={id} className={`message ${isOwnMessage ? 'sent' : 'received'}`}>
+    <div ref={messageRef} id={id} className={`message ${isOwnMessage ? 'sent' : 'received'} ${isFirstUnread ? 'first-unread' : ''}`}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
         <Avatar size="small" style={{ backgroundColor: '#87d068' }}>
           {getUserAvatar(message.senderId)}

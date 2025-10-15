@@ -132,3 +132,39 @@
   margin: 0;
 }
 
+/* Стили для первого непрочитанного сообщения */
+.message.first-unread {
+  position: relative;
+  border-left: 4px solid #1890ff;
+  padding-left: 8px;
+  margin-left: -8px;
+  background-color: rgba(24, 144, 255, 0.05);
+  border-radius: 8px;
+  animation: highlightUnread 2s ease-in-out;
+}
+
+.message.first-unread::before {
+  content: "Новое сообщение";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background-color: #1890ff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  z-index: 10;
+}
+
+@keyframes highlightUnread {
+  0% {
+    background-color: rgba(24, 144, 255, 0.2);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: rgba(24, 144, 255, 0.05);
+    transform: scale(1);
+  }
+}
+

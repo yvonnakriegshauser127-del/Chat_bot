@@ -86,7 +86,7 @@ const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValue
   const { t } = useTranslation(targetLanguage)
   const [form] = Form.useForm()
   const [selectedColor, setSelectedColor] = useState(initialValues?.color || '#1890ff')
-  const [selectedTextColor, setSelectedTextColor] = useState(initialValues?.textColor || '#ffffff')
+  const [selectedTextColor, setSelectedTextColor] = useState(initialValues?.textColor || '#000000')
   const [labelName, setLabelName] = useState(initialValues?.name || '')
 
   // Инициализация формы при открытии модального окна

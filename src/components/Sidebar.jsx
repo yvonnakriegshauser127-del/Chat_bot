@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Dropdown, Space, Tag, Modal, Popconfirm } from 'antd'
-import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, InboxOutlined, FileZipFilled, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, UpOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined, TagOutlined, MoreOutlined, EditOutlined } from '@ant-design/icons'
+import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, FileZipOutlined, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, UpOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, LockOutlined, UnlockOutlined, ExclamationCircleOutlined, TagOutlined, MoreOutlined, EditOutlined } from '@ant-design/icons'
 import PresetModal from './PresetModal'
 import UserLabelsModal from './UserLabelsModal'
 import LabelFormModal from './LabelFormModal'
@@ -54,8 +54,28 @@ const Sidebar = ({
   const [showEditLabelModal, setShowEditLabelModal] = useState(false)
   const [editingLabel, setEditingLabel] = useState(null)
   const [isLabelsSectionCollapsed, setIsLabelsSectionCollapsed] = useState(false)
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebarWidth')
+    return saved ? parseInt(saved) : 400
+  })
+  const [isSidebarResizable, setIsSidebarResizable] = useState(false)
   const { t } = useTranslation(targetLanguage)
 
+  // Функция для переключения режима изменения ширины сайдбара
+  const handleToggleSidebarResize = () => {
+    if (isSidebarResizable) {
+      // Фиксируем новую ширину
+      localStorage.setItem('sidebarWidth', sidebarWidth.toString())
+    }
+    setIsSidebarResizable(!isSidebarResizable)
+  }
+
+  // Функция для изменения ширины сайдбара
+  const handleSidebarResize = (newWidth) => {
+    const minWidth = 400
+    const clampedWidth = Math.max(minWidth, newWidth)
+    setSidebarWidth(clampedWidth)
+  }
 
   // Обработка выбора фильтров
   const handleFilterToggle = (filter) => {
@@ -166,24 +186,131 @@ const Sidebar = ({
       ? getFilteredChatsByGroup(selectedGroupFilter)
       : chats
 
-    // Если выбран только "Все чаты", показываем только неархивные
-    if (activeFilters.length === 1 && activeFilters.includes('all')) {
-      filteredChats = filteredChats.filter(chat => !chat.isArchived)
+    // Применяем фильтр пресета, если выбран пресет
+    if (selectedPresets.length > 0) {
+      // Собираем все критерии из всех выбранных пресетов
+      const allChannels = []
+      const allStores = []
+      const allEmails = []
+      const allLabels = []
+
+      selectedPresets.forEach(presetId => {
+        const preset = presets.find(p => p.id === presetId)
+        if (preset) {
+          if (preset.channels && preset.channels.length > 0) {
+            allChannels.push(...preset.channels)
+          }
+          if (preset.stores && preset.stores.length > 0) {
+            allStores.push(...preset.stores)
+          }
+          if (preset.emails && preset.emails.length > 0) {
+            allEmails.push(...preset.emails)
+          }
+          if (preset.labels && preset.labels.length > 0) {
+            allLabels.push(...preset.labels)
+          }
+        }
+      })
+
+      // Убираем дубликаты
+      const uniqueChannels = [...new Set(allChannels)]
+      const uniqueStores = [...new Set(allStores)]
+      const uniqueEmails = [...new Set(allEmails)]
+      const uniqueLabels = [...new Set(allLabels)]
+
+      // Фильтруем чаты по собранным критериям
+      filteredChats = filteredChats.filter(chat => {
+        const matches = []
+
+        // Проверяем соответствие каналам
+        if (uniqueChannels.length > 0) {
+          matches.push(uniqueChannels.includes(chat.platform))
+        }
+
+        // Проверяем соответствие магазинам
+        if (uniqueStores.length > 0) {
+          matches.push(chat.brandName && uniqueStores.includes(chat.brandName))
+        }
+
+        // Проверяем соответствие email адресам
+        if (uniqueEmails.length > 0) {
+          matches.push(chat.email && uniqueEmails.includes(chat.email))
+        }
+
+        // Проверяем соответствие ярлыкам пользователя
+        if (uniqueLabels.length > 0) {
+          const hasMatchingLabel = chat.participants.some(participantId => {
+            const user = users.find(u => u.id === participantId)
+            return user && user.labels && uniqueLabels.some(labelId => 
+              user.labels.includes(labelId)
+            )
+          })
+          matches.push(hasMatchingLabel)
+        }
+
+        // Если нет критериев в выбранных пресетах, чат не соответствует
+        if (matches.length === 0) return false
+
+        // Чат соответствует, если соответствует хотя бы одному критерию
+        return matches.some(match => match)
+      })
+    }
+
+    // Обрабатываем фильтр "Все чаты" и дополнительные фильтры
+    if (activeFilters.includes('all')) {
+      // Если выбран пресет и "Все чаты", показываем все чаты, подходящие под пресет
+      if (selectedPresets.length > 0) {
+        // filteredChats уже содержит чаты, соответствующие пресету
+        // Дополнительно применяем только статусные фильтры, если они выбраны
+        const statusFilters = activeFilters.filter(filter => 
+          ['favorites', 'archive', 'unread'].includes(filter)
+        )
+        
+        if (statusFilters.length > 0) {
+          // Чат должен соответствовать И пресету И статусному фильтру
+          filteredChats = filteredChats.filter(chat => {
+            return statusFilters.some(filter => {
+              switch (filter) {
+                case 'favorites':
+                  return chat.isFavorite
+                case 'archive':
+                  return chat.isArchived
+                case 'unread':
+                  return chat.unreadCount > 0
+                default:
+                  return false
+              }
+            })
+          })
+        } else {
+          // Если статусных фильтров нет, показываем только неархивные чаты из пресета
+          filteredChats = filteredChats.filter(chat => !chat.isArchived)
+        }
+      } else {
+        // Если пресет не выбран, показываем только неархивные чаты
+        filteredChats = filteredChats.filter(chat => !chat.isArchived)
+      }
     } else {
-      // Применяем множественные фильтры
+      // Применяем множественные фильтры (без "Все чаты")
       const filters = activeFilters.filter(f => f !== 'all')
       
       if (filters.length > 0) {
-        filteredChats = chats.filter(chat => {
-          // Проверяем, соответствует ли чат хотя бы одному из активных фильтров
-          return filters.some(filter => {
+        // Разделяем фильтры на две группы
+        const platformFilters = filters.filter(filter => 
+          ['amazon', 'instagram', 'email', 'tiktok'].includes(filter)
+        )
+        const statusFilters = filters.filter(filter => 
+          ['favorites', 'archive', 'unread'].includes(filter)
+        )
+        
+        filteredChats = filteredChats.filter(chat => {
+          let matchesPlatform = true
+          let matchesStatus = true
+          
+          // Проверяем соответствие фильтрам платформ (логика ИЛИ внутри группы)
+          if (platformFilters.length > 0) {
+            matchesPlatform = platformFilters.some(filter => {
             switch (filter) {
-              case 'favorites':
-                return chat.isFavorite
-              case 'archive':
-                return chat.isArchived
-              case 'unread':
-                return chat.unreadCount > 0
               case 'amazon':
                 return chat.platform === 'amazon'
               case 'instagram':
@@ -196,6 +323,26 @@ const Sidebar = ({
                 return false
             }
           })
+          }
+          
+          // Проверяем соответствие статусным фильтрам (логика ИЛИ внутри группы)
+          if (statusFilters.length > 0) {
+            matchesStatus = statusFilters.some(filter => {
+              switch (filter) {
+                case 'favorites':
+                  return chat.isFavorite
+                case 'archive':
+                  return chat.isArchived
+                case 'unread':
+                  return chat.unreadCount > 0
+                default:
+                  return false
+              }
+            })
+          }
+          
+          // Между группами применяется логика И
+          return matchesPlatform && matchesStatus
         })
       }
     }
@@ -307,6 +454,11 @@ const Sidebar = ({
     if (onPresetSelect) {
       onPresetSelect(null)
     }
+    // Сбрасываем другие фильтры
+    setActiveFilters(['all'])
+    if (onGroupFilterSelect) {
+      onGroupFilterSelect(null)
+    }
   }
 
   // Функция для переключения выбора пресета
@@ -330,21 +482,37 @@ const Sidebar = ({
         return newSelected
       }
     })
+    
+    // При выборе пресета сбрасываем другие фильтры
+    setActiveFilters(['all'])
+    if (onGroupFilterSelect) {
+      onGroupFilterSelect(null)
+    }
   }
 
   return (
-    <Sider width={400} className="sidebar">
+    <Sider width={sidebarWidth} className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-title">
           <MessageOutlined style={{ fontSize: '20px', marginRight: '8px' }} />
           <Text strong style={{ fontSize: '18px' }}>{t('chats')}</Text>
         </div>
-          <Button 
-            type="text"
-            icon={<SettingOutlined />}
-            onClick={onShowProfileSettings}
-            size="small"
-          />
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <Button 
+              type="text"
+              icon={<SettingOutlined />}
+              onClick={onShowProfileSettings}
+              size="small"
+              title={t('profileSettings')}
+            />
+            <Button 
+              type="text"
+              icon={isSidebarResizable ? <UnlockOutlined /> : <LockOutlined />}
+              onClick={handleToggleSidebarResize}
+              size="small"
+              title={isSidebarResizable ? t('lockSidebarWidth') : t('changeSidebarWidth')}
+            />
+          </div>
       </div>
       
       <div className="search-container">
@@ -363,7 +531,7 @@ const Sidebar = ({
       <div style={{ padding: '0 16px 16px 16px' }} className="preset-dropdown">
         <Dropdown
           overlayClassName="preset-dropdown-overlay"
-          destroyPopupOnHide={false}
+          destroyOnHidden={false}
           menu={{
             items: [
               {
@@ -458,7 +626,7 @@ const Sidebar = ({
                           }}
                       />
                     </Popconfirm>
-                    </div>
+                  </div>
                   </div>
                 )
               })),
@@ -748,74 +916,81 @@ const Sidebar = ({
               ))}
             </div>
             )}
-            </div>
+          </div>
           </div>
         )}
 
         <div className="section-buttons">
-          <Button 
-            type={activeFilters.includes('all') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('all')}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            {t('allChats')}
-          </Button>
-          <Button 
-            type={activeFilters.includes('favorites') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('favorites')}
-            icon={<StarOutlined />}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            {t('favorites')}
-          </Button>
-          <Button 
-            type={activeFilters.includes('unread') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('unread')}
-            icon={<BellOutlined />}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            {t('unread')}
-          </Button>
-          <Button 
-            type={activeFilters.includes('amazon') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('amazon')}
-            icon={<AmazonOutlined />}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            Amazon
-          </Button>
-          <Button 
-            type={activeFilters.includes('instagram') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('instagram')}
-            icon={<InstagramOutlined />}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            Instagram
-          </Button>
-          <Button 
-            type={activeFilters.includes('email') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('email')}
-            icon={<MailOutlined />}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            Email
-          </Button>
-          <Button 
-            type={activeFilters.includes('tiktok') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('tiktok')}
-            icon={<TikTokOutlined />}
-            style={{ marginRight: '4px', marginBottom: '4px' }}
-          >
-            TikTok
-          </Button>
-          <Button 
-            type={activeFilters.includes('archive') ? 'primary' : 'text'}
-            onClick={() => handleFilterToggle('archive')}
-            icon={<InboxOutlined />}
-            style={{ marginBottom: '4px' }}
-          >
-            {t('archive')}
-          </Button>
+          {/* Первая строка - статусные фильтры */}
+          <div style={{ marginBottom: '8px' }}>
+            <Button 
+              type={activeFilters.includes('all') ? 'primary' : 'text'}
+              onClick={() => handleFilterToggle('all')}
+              style={{ marginRight: '4px' }}
+            >
+              {t('allChats')}
+            </Button>
+            <Tooltip title={t('favorites')}>
+              <Button 
+                type={activeFilters.includes('favorites') ? 'primary' : 'text'}
+                onClick={() => handleFilterToggle('favorites')}
+                icon={<StarOutlined />}
+                style={{ marginRight: '4px' }}
+              />
+            </Tooltip>
+            <Tooltip title={t('unread')}>
+              <Button 
+                type={activeFilters.includes('unread') ? 'primary' : 'text'}
+                onClick={() => handleFilterToggle('unread')}
+                icon={<BellOutlined />}
+                style={{ marginRight: '4px' }}
+              />
+            </Tooltip>
+            <Tooltip title={t('archive')}>
+              <Button 
+                type={activeFilters.includes('archive') ? 'primary' : 'text'}
+                onClick={() => handleFilterToggle('archive')}
+                icon={<FileZipOutlined />}
+                style={{ marginRight: '4px' }}
+              />
+            </Tooltip>
+          </div>
+          
+          {/* Вторая строка - платформенные фильтры */}
+          <div>
+            <Button 
+              type={activeFilters.includes('amazon') ? 'primary' : 'text'}
+              onClick={() => handleFilterToggle('amazon')}
+              icon={<AmazonOutlined />}
+              style={{ marginRight: '4px' }}
+            >
+              Amazon
+            </Button>
+            <Button 
+              type={activeFilters.includes('instagram') ? 'primary' : 'text'}
+              onClick={() => handleFilterToggle('instagram')}
+              icon={<InstagramOutlined />}
+              style={{ marginRight: '4px' }}
+            >
+              Instagram
+            </Button>
+            <Button 
+              type={activeFilters.includes('email') ? 'primary' : 'text'}
+              onClick={() => handleFilterToggle('email')}
+              icon={<MailOutlined />}
+              style={{ marginRight: '4px' }}
+            >
+              Email
+            </Button>
+            <Button 
+              type={activeFilters.includes('tiktok') ? 'primary' : 'text'}
+              onClick={() => handleFilterToggle('tiktok')}
+              icon={<TikTokOutlined />}
+              style={{ marginRight: '4px' }}
+            >
+              TikTok
+            </Button>
+          </div>
       </div>
       
       <div className="chat-list">
@@ -912,7 +1087,7 @@ const Sidebar = ({
                             <Button
                               type="text"
                               size="small"
-                              icon={chat.isArchived ? <FileZipFilled style={{ color: '#52c41a' }} /> : <InboxOutlined />}
+                              icon={<FileZipOutlined />}
                               onClick={(e) => {
                                 e.stopPropagation()
                                 onToggleArchive(chat.id)
@@ -1049,6 +1224,40 @@ const Sidebar = ({
           targetLanguage={targetLanguage}
           initialValues={editingPreset}
           isEdit={true}
+        />
+      )}
+
+      {/* Обработчик изменения размера сайдбара */}
+      {isSidebarResizable && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: -5,
+            width: 10,
+            height: '100%',
+            cursor: 'col-resize',
+            zIndex: 1000,
+            background: 'transparent'
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault()
+            const startX = e.clientX
+            const startWidth = sidebarWidth
+
+            const handleMouseMove = (e) => {
+              const newWidth = startWidth + (e.clientX - startX)
+              handleSidebarResize(newWidth)
+            }
+
+            const handleMouseUp = () => {
+              document.removeEventListener('mousemove', handleMouseMove)
+              document.removeEventListener('mouseup', handleMouseUp)
+            }
+
+            document.addEventListener('mousemove', handleMouseMove)
+            document.addEventListener('mouseup', handleMouseUp)
+          }}
         />
       )}
 
