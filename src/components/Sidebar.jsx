@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Dropdown, Space, Tag, Modal, Popconfirm } from 'antd'
-import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, FileZipOutlined, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, UpOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, LockOutlined, UnlockOutlined, ExclamationCircleOutlined, TagOutlined, MoreOutlined, EditOutlined } from '@ant-design/icons'
+import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, FileZipOutlined, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, UpOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined, TagOutlined, MoreOutlined, EditOutlined } from '@ant-design/icons'
 import PresetModal from './PresetModal'
 import UserLabelsModal from './UserLabelsModal'
 import LabelFormModal from './LabelFormModal'
@@ -41,7 +41,8 @@ const Sidebar = ({
   onUpdateLabel,
   onDeleteLabel,
   onSaveLabelToPreset,
-  getFilteredChatsByGroup
+  getFilteredChatsByGroup,
+  userMatchesGroupFilter
 }) => {
   const [activeFilters, setActiveFilters] = useState(['all'])
   const [selectedPresets, setSelectedPresets] = useState([])
@@ -53,21 +54,38 @@ const Sidebar = ({
   const [showCreateLabelModal, setShowCreateLabelModal] = useState(false)
   const [showEditLabelModal, setShowEditLabelModal] = useState(false)
   const [editingLabel, setEditingLabel] = useState(null)
+  const [presetDropdownVisible, setPresetDropdownVisible] = useState(false)
   const [isLabelsSectionCollapsed, setIsLabelsSectionCollapsed] = useState(false)
+  const [selectedLabelFilters, setSelectedLabelFilters] = useState([])
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('sidebarWidth')
     return saved ? parseInt(saved) : 400
   })
-  const [isSidebarResizable, setIsSidebarResizable] = useState(false)
   const { t } = useTranslation(targetLanguage)
 
-  // Функция для переключения режима изменения ширины сайдбара
-  const handleToggleSidebarResize = () => {
-    if (isSidebarResizable) {
-      // Фиксируем новую ширину
-      localStorage.setItem('sidebarWidth', sidebarWidth.toString())
+  // Функция для получения фильтров из выбранных пресетов
+  const getFiltersFromPresets = () => {
+    if (selectedPresets.length === 0) return { channels: [], labels: [] }
+    
+    const presetChannels = []
+    const presetLabels = []
+    
+    selectedPresets.forEach(presetId => {
+      const preset = presets.find(p => p.id === presetId)
+      if (preset) {
+        if (preset.channels && preset.channels.length > 0) {
+          presetChannels.push(...preset.channels)
+        }
+        if (preset.labels && preset.labels.length > 0) {
+          presetLabels.push(...preset.labels)
+        }
+      }
+    })
+    
+    return {
+      channels: [...new Set(presetChannels)], // убираем дубликаты
+      labels: [...new Set(presetLabels)] // убираем дубликаты
     }
-    setIsSidebarResizable(!isSidebarResizable)
   }
 
   // Функция для изменения ширины сайдбара
@@ -75,6 +93,8 @@ const Sidebar = ({
     const minWidth = 400
     const clampedWidth = Math.max(minWidth, newWidth)
     setSidebarWidth(clampedWidth)
+    // Сохраняем новую ширину в localStorage
+    localStorage.setItem('sidebarWidth', clampedWidth.toString())
   }
 
   // Обработка выбора фильтров
@@ -82,29 +102,42 @@ const Sidebar = ({
     setActiveFilters(prev => {
       // Если выбран "Все чаты", снимаем все остальные фильтры
       if (filter === 'all') {
+        // Также сбрасываем фильтр ярлыков
+        if (onGroupFilterSelect) {
+          onGroupFilterSelect(null)
+        }
         return ['all']
-      }
-      
-      // Если "Все чаты" уже выбран, заменяем его на новый фильтр
-      if (prev.includes('all')) {
-        return [filter]
       }
       
       // Если фильтр уже выбран, убираем его
       if (prev.includes(filter)) {
         const newFilters = prev.filter(f => f !== filter)
-        // Если не осталось фильтров, возвращаем "Все чаты"
-        return newFilters.length === 0 ? ['all'] : newFilters
+        // Если остались только 'all' или вообще ничего, возвращаем ['all']
+        const nonAllFilters = newFilters.filter(f => f !== 'all')
+        return nonAllFilters.length === 0 ? ['all'] : newFilters
       }
       
-      // Добавляем новый фильтр
+      // Если "Все чаты" уже выбран и нет других фильтров, заменяем его на новый фильтр
+      if (prev.includes('all') && prev.length === 1) {
+        return [filter]
+      }
+      
+      // Добавляем новый фильтр (сохраняем 'all' если он есть)
       return [...prev, filter]
     })
   }
 
   const formatTime = (date) => {
+    // Проверяем, что date существует и преобразуем в объект Date
+    if (!date) return t('now')
+    
+    const dateObj = date instanceof Date ? date : new Date(date)
+    
+    // Проверяем, что дата валидна
+    if (isNaN(dateObj.getTime())) return t('now')
+    
     const now = new Date()
-    const diff = now - date
+    const diff = now - dateObj
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
@@ -118,7 +151,7 @@ const Sidebar = ({
     } else if (days < 7) {
       return `${days}${t('daysAgo')}`
     } else {
-      return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+      return dateObj.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
     }
   }
 
@@ -186,45 +219,38 @@ const Sidebar = ({
       ? getFilteredChatsByGroup(selectedGroupFilter)
       : chats
 
-    // Применяем фильтр пресета, если выбран пресет
-    if (selectedPresets.length > 0) {
-      // Собираем все критерии из всех выбранных пресетов
-      const allChannels = []
+    // Применяем фильтр пресета, если выбран пресет И есть активные фильтры
+    if (selectedPresets.length > 0 && !activeFilters.includes('all')) {
+      // Получаем фильтры из пресетов
+      const presetFilters = getFiltersFromPresets()
+      
+      // Собираем все критерии из всех выбранных пресетов (включая stores и emails)
       const allStores = []
       const allEmails = []
-      const allLabels = []
 
       selectedPresets.forEach(presetId => {
         const preset = presets.find(p => p.id === presetId)
         if (preset) {
-          if (preset.channels && preset.channels.length > 0) {
-            allChannels.push(...preset.channels)
-          }
           if (preset.stores && preset.stores.length > 0) {
             allStores.push(...preset.stores)
           }
           if (preset.emails && preset.emails.length > 0) {
             allEmails.push(...preset.emails)
           }
-          if (preset.labels && preset.labels.length > 0) {
-            allLabels.push(...preset.labels)
-          }
         }
       })
 
       // Убираем дубликаты
-      const uniqueChannels = [...new Set(allChannels)]
       const uniqueStores = [...new Set(allStores)]
       const uniqueEmails = [...new Set(allEmails)]
-      const uniqueLabels = [...new Set(allLabels)]
 
       // Фильтруем чаты по собранным критериям
       filteredChats = filteredChats.filter(chat => {
         const matches = []
 
-        // Проверяем соответствие каналам
-        if (uniqueChannels.length > 0) {
-          matches.push(uniqueChannels.includes(chat.platform))
+        // Проверяем соответствие каналам (используем фильтры из пресетов)
+        if (presetFilters.channels.length > 0) {
+          matches.push(presetFilters.channels.includes(chat.platform))
         }
 
         // Проверяем соответствие магазинам
@@ -237,11 +263,11 @@ const Sidebar = ({
           matches.push(chat.email && uniqueEmails.includes(chat.email))
         }
 
-        // Проверяем соответствие ярлыкам пользователя
-        if (uniqueLabels.length > 0) {
+        // Проверяем соответствие ярлыкам пользователя (используем фильтры из пресетов)
+        if (presetFilters.labels.length > 0) {
           const hasMatchingLabel = chat.participants.some(participantId => {
             const user = users.find(u => u.id === participantId)
-            return user && user.labels && uniqueLabels.some(labelId => 
+            return user && user.labels && presetFilters.labels.some(labelId => 
               user.labels.includes(labelId)
             )
           })
@@ -256,60 +282,24 @@ const Sidebar = ({
       })
     }
 
-    // Обрабатываем фильтр "Все чаты" и дополнительные фильтры
-    if (activeFilters.includes('all')) {
-      // Если выбран пресет и "Все чаты", показываем все чаты, подходящие под пресет
-      if (selectedPresets.length > 0) {
-        // filteredChats уже содержит чаты, соответствующие пресету
-        // Дополнительно применяем только статусные фильтры, если они выбраны
-        const statusFilters = activeFilters.filter(filter => 
-          ['favorites', 'archive', 'unread'].includes(filter)
-        )
-        
-        if (statusFilters.length > 0) {
-          // Чат должен соответствовать И пресету И статусному фильтру
-          filteredChats = filteredChats.filter(chat => {
-            return statusFilters.some(filter => {
-              switch (filter) {
-                case 'favorites':
-                  return chat.isFavorite
-                case 'archive':
-                  return chat.isArchived
-                case 'unread':
-                  return chat.unreadCount > 0
-                default:
-                  return false
-              }
-            })
-          })
-        } else {
-          // Если статусных фильтров нет, показываем только неархивные чаты из пресета
-          filteredChats = filteredChats.filter(chat => !chat.isArchived)
-        }
-      } else {
-        // Если пресет не выбран, показываем только неархивные чаты
-        filteredChats = filteredChats.filter(chat => !chat.isArchived)
-      }
-    } else {
-      // Применяем множественные фильтры (без "Все чаты")
-      const filters = activeFilters.filter(f => f !== 'all')
+    // Обрабатываем все фильтры
+    const filters = activeFilters.filter(f => f !== 'all')
+    
+    if (filters.length > 0) {
+      // Разделяем фильтры на группы
+      const platformFilters = filters.filter(filter => 
+        ['amazon', 'instagram', 'email', 'tiktok'].includes(filter)
+      )
+      const statusFilters = filters.filter(filter => 
+        ['favorites', 'archive', 'unread'].includes(filter)
+      )
       
-      if (filters.length > 0) {
-        // Разделяем фильтры на две группы
-        const platformFilters = filters.filter(filter => 
-          ['amazon', 'instagram', 'email', 'tiktok'].includes(filter)
-        )
-        const statusFilters = filters.filter(filter => 
-          ['favorites', 'archive', 'unread'].includes(filter)
-        )
+      filteredChats = filteredChats.filter(chat => {
+        const matches = []
         
-        filteredChats = filteredChats.filter(chat => {
-          let matchesPlatform = true
-          let matchesStatus = true
-          
-          // Проверяем соответствие фильтрам платформ (логика ИЛИ внутри группы)
-          if (platformFilters.length > 0) {
-            matchesPlatform = platformFilters.some(filter => {
+        // Проверяем соответствие фильтрам платформ
+        if (platformFilters.length > 0) {
+          const matchesPlatform = platformFilters.some(filter => {
             switch (filter) {
               case 'amazon':
                 return chat.platform === 'amazon'
@@ -323,28 +313,48 @@ const Sidebar = ({
                 return false
             }
           })
+          matches.push(matchesPlatform)
+        }
+        
+        // Проверяем соответствие статусным фильтрам
+        if (statusFilters.length > 0) {
+          const matchesStatus = statusFilters.some(filter => {
+            switch (filter) {
+              case 'favorites':
+                return chat.isFavorite
+              case 'archive':
+                return chat.isArchived
+              case 'unread':
+                return chat.unreadCount > 0
+              default:
+                return false
+            }
+          })
+          matches.push(matchesStatus)
+        }
+        
+        // Проверяем соответствие фильтрам по ярлыкам (если выбраны)
+        if (selectedLabelFilters.length > 0) {
+          const participantId = chat.participants.find(id => id !== 1) // Исключаем текущего пользователя
+          const participant = users.find(u => u.id === participantId)
+          if (participant) {
+            // Проверяем, соответствует ли пользователь хотя бы одному из выбранных ярлыков
+            const matchesAnyLabel = selectedLabelFilters.some(labelFilter => 
+              userMatchesGroupFilter(participant, labelFilter)
+            )
+            matches.push(matchesAnyLabel)
           }
-          
-          // Проверяем соответствие статусным фильтрам (логика ИЛИ внутри группы)
-          if (statusFilters.length > 0) {
-            matchesStatus = statusFilters.some(filter => {
-              switch (filter) {
-                case 'favorites':
-                  return chat.isFavorite
-                case 'archive':
-                  return chat.isArchived
-                case 'unread':
-                  return chat.unreadCount > 0
-                default:
-                  return false
-              }
-            })
-          }
-          
-          // Между группами применяется логика И
-          return matchesPlatform && matchesStatus
-        })
-      }
+        }
+        
+        // Если нет активных фильтров, чат не соответствует
+        if (matches.length === 0) return false
+        
+        // Чат соответствует, если соответствует хотя бы одному типу фильтров (логика ИЛИ)
+        return matches.some(match => match)
+      })
+    } else if (activeFilters.includes('all')) {
+      // Если только "Все чаты", показываем только неархивные чаты
+      filteredChats = filteredChats.filter(chat => !chat.isArchived)
     }
 
     // Дополнительная фильтрация по поиску
@@ -445,6 +455,7 @@ const Sidebar = ({
   const handleEditPreset = (preset) => {
     setEditingPreset(preset)
     setShowEditPresetModal(true)
+    setPresetDropdownVisible(false) // Закрываем дропдаун
   }
 
   // Функция для сброса к дефолтным настройкам
@@ -454,8 +465,9 @@ const Sidebar = ({
     if (onPresetSelect) {
       onPresetSelect(null)
     }
-    // Сбрасываем другие фильтры
+    // Сбрасываем все фильтры
     setActiveFilters(['all'])
+    setSelectedLabelFilters([])
     if (onGroupFilterSelect) {
       onGroupFilterSelect(null)
     }
@@ -463,6 +475,8 @@ const Sidebar = ({
 
   // Функция для переключения выбора пресета
   const handlePresetToggle = (presetId) => {
+    const isCurrentlySelected = selectedPresets.includes(presetId)
+    
     setSelectedPresets(prev => {
       if (prev.includes(presetId)) {
         // Убираем пресет из выбранных
@@ -483,10 +497,80 @@ const Sidebar = ({
       }
     })
     
-    // При выборе пресета сбрасываем другие фильтры
-    setActiveFilters(['all'])
-    if (onGroupFilterSelect) {
-      onGroupFilterSelect(null)
+    // Применяем фильтры на основе нового состояния выбранных пресетов
+    const newSelectedPresets = isCurrentlySelected 
+      ? selectedPresets.filter(id => id !== presetId) // Убираем текущий пресет
+      : [...selectedPresets, presetId] // Добавляем текущий пресет
+    
+    if (newSelectedPresets.length > 0) {
+      // Собираем все каналы из всех выбранных пресетов
+      const allPresetChannels = []
+      const allPresetLabels = []
+      
+      // Добавляем каналы и ярлыки из всех выбранных пресетов
+      newSelectedPresets.forEach(id => {
+        const preset = presets.find(p => p.id === id)
+        if (preset) {
+          if (preset.channels && preset.channels.length > 0) {
+            allPresetChannels.push(...preset.channels)
+          }
+          if (preset.labels && preset.labels.length > 0) {
+            allPresetLabels.push(...preset.labels)
+          }
+        }
+      })
+      
+      // Убираем дубликаты
+      const uniqueChannels = [...new Set(allPresetChannels)]
+      const uniqueLabels = [...new Set(allPresetLabels)]
+      
+      // Устанавливаем фильтры каналов
+      // Если есть фильтры из пресета, не добавляем 'all'
+      const newActiveFilters = uniqueChannels.length > 0 
+        ? uniqueChannels 
+        : ['all']
+      setActiveFilters(newActiveFilters)
+      
+      // Устанавливаем фильтр ярлыков из пресета
+      if (uniqueLabels.length > 0) {
+        // Находим соответствующие групповые фильтры для ярлыков из пресета
+        const presetLabelFilters = groups.filter(group => 
+          group.conditions && group.conditions.labels && 
+          group.conditions.labels.some(labelId => uniqueLabels.includes(labelId))
+        )
+        
+        // Устанавливаем выбранные ярлыки из пресета
+        setSelectedLabelFilters(presetLabelFilters)
+        
+        // Создаем виртуальный групповой фильтр для всех ярлыков из пресета
+        const virtualGroupFilter = {
+          id: 'preset-labels',
+          name: `Пресет (${uniqueLabels.length} ярлыков)`,
+          description: `Ярлыки из пресета: ${uniqueLabels.join(', ')}`,
+          color: '#1890ff',
+          textColor: '#ffffff',
+          conditions: {
+            labels: uniqueLabels,
+            matchType: 'any' // Пользователь должен иметь хотя бы один из ярлыков
+          }
+        }
+        if (onGroupFilterSelect) {
+          onGroupFilterSelect(virtualGroupFilter)
+        }
+      } else {
+        // Сбрасываем выбранные ярлыки если в пресете их нет
+        setSelectedLabelFilters([])
+        if (onGroupFilterSelect) {
+          onGroupFilterSelect(null)
+        }
+      }
+    } else {
+      // Если нет выбранных пресетов, сбрасываем все фильтры
+      setActiveFilters(['all'])
+      setSelectedLabelFilters([])
+      if (onGroupFilterSelect) {
+        onGroupFilterSelect(null)
+      }
     }
   }
 
@@ -504,13 +588,6 @@ const Sidebar = ({
               onClick={onShowProfileSettings}
               size="small"
               title={t('profileSettings')}
-            />
-            <Button 
-              type="text"
-              icon={isSidebarResizable ? <UnlockOutlined /> : <LockOutlined />}
-              onClick={handleToggleSidebarResize}
-              size="small"
-              title={isSidebarResizable ? t('lockSidebarWidth') : t('changeSidebarWidth')}
             />
           </div>
       </div>
@@ -532,6 +609,8 @@ const Sidebar = ({
         <Dropdown
           overlayClassName="preset-dropdown-overlay"
           destroyOnHidden={false}
+          open={presetDropdownVisible}
+          onOpenChange={setPresetDropdownVisible}
           menu={{
             items: [
               {
@@ -605,6 +684,7 @@ const Sidebar = ({
                       title={t('deletePreset')}
                       description={t('confirmDeletePresetMessage')}
                       onConfirm={() => onDeletePreset(preset.id)}
+                      onCancel={(e) => e?.stopPropagation()}
                       okText={t('yes')}
                       cancelText={t('no')}
                       icon={<ExclamationCircleOutlined style={{ color: '#ff8c00' }} />}
@@ -641,7 +721,10 @@ const Sidebar = ({
                       <span>{t('addPreset')}</span>
                     </Space>
                   ),
-                onClick: () => setShowPresetModal(true)
+                onClick: () => {
+                  setShowPresetModal(true)
+                  setPresetDropdownVisible(false)
+                }
               }
             ]
           }}
@@ -798,7 +881,44 @@ const Sidebar = ({
             </div>
             {!isLabelsSectionCollapsed && (
               <div className="labels-buttons-container">
-              {groups.map(group => (
+              {groups.map(group => {
+                const isSelected = selectedLabelFilters.some(filter => filter.id === group.id)
+                
+                const handleLabelClick = () => {
+                  // Переключение множественного выбора ярлыков
+                  setSelectedLabelFilters(prev => {
+                    if (prev.some(filter => filter.id === group.id)) {
+                      // Убираем ярлык из выбранных
+                      const newFilters = prev.filter(filter => filter.id !== group.id)
+                      // Если больше нет выбранных ярлыков, сбрасываем в App
+                      if (newFilters.length === 0 && onGroupFilterSelect) {
+                        onGroupFilterSelect(null)
+                      }
+                      return newFilters
+                    } else {
+                      // Добавляем ярлык к выбранным
+                      const newFilters = [...prev, group]
+                      // Уведомляем App о выборе (передаем виртуальный фильтр для множественных ярлыков)
+                      if (onGroupFilterSelect) {
+                        const virtualGroupFilter = {
+                          id: 'multiple-labels',
+                          name: `Ярлыки (${newFilters.length})`,
+                          description: `Выбранные ярлыки: ${newFilters.map(f => f.name).join(', ')}`,
+                          color: '#1890ff',
+                          textColor: '#ffffff',
+                          conditions: {
+                            labels: newFilters.flatMap(f => f.conditions.labels),
+                            matchType: 'any'
+                          }
+                        }
+                        onGroupFilterSelect(virtualGroupFilter)
+                      }
+                      return newFilters
+                    }
+                  })
+                }
+                
+                return (
                 <div
                   key={group.id}
                   style={{
@@ -809,9 +929,9 @@ const Sidebar = ({
                   className="label-button-wrapper"
                 >
                   <Button
-                    type={selectedGroupFilter?.id === group.id ? 'primary' : 'default'}
+                    type={isSelected ? 'primary' : 'default'}
                     size="small"
-                    onClick={() => onGroupFilterSelect(selectedGroupFilter?.id === group.id ? null : group)}
+                    onClick={handleLabelClick}
                     className="label-button"
                     style={{
                       paddingRight: '24px' // Место для иконки меню
@@ -913,7 +1033,8 @@ const Sidebar = ({
                     />
                   </Dropdown>
                 </div>
-              ))}
+                )
+              })}
             </div>
             )}
           </div>
@@ -998,13 +1119,15 @@ const Sidebar = ({
             dataSource={filteredChats}
             renderItem={(chat) => {
           const lastMessage = chat.messages[chat.messages.length - 1]
-          const lastMessageTime = lastMessage ? formatTime(lastMessage.timestamp) : ''
+          const lastMessageTime = lastMessage && lastMessage.timestamp ? formatTime(lastMessage.timestamp) : ''
           const lastMessageText = lastMessage ? lastMessage.content : 'Нет сообщений'
           
           return (
                 <List.Item
               key={chat.id}
                   className={`chat-item ${currentChatId === chat.id ? 'active' : ''} ${chat.isArchived ? 'archived' : ''}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => onChatSelect(chat.id, searchTerm)}
                 >
                   <List.Item.Meta
                     avatar={getChatAvatar(chat)}
@@ -1015,13 +1138,11 @@ const Sidebar = ({
                             strong 
                             style={{ 
                               fontSize: '14px', 
-                              cursor: 'pointer',
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               maxWidth: '120px'
                             }}
-              onClick={() => onChatSelect(chat.id, searchTerm)}
             >
                             {chat.name}
                           </Text>
@@ -1056,7 +1177,6 @@ const Sidebar = ({
                             whiteSpace: 'nowrap',
                             marginRight: '8px'
                           }}
-                          onClick={() => onChatSelect(chat.id, searchTerm)}
                         >
                           {lastMessageText}
                         </Text>
@@ -1084,15 +1204,34 @@ const Sidebar = ({
                             />
                           </Tooltip>
                           <Tooltip title={chat.isArchived ? t('returnFromArchive') : t('moveToArchive')}>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<FileZipOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onToggleArchive(chat.id)
-                              }}
-                            />
+                            {chat.isArchived ? (
+                              <Button
+                                type="text"
+                                size="small"
+                                icon={<FileZipOutlined />}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onToggleArchive(chat.id)
+                                }}
+                              />
+                            ) : (
+                              <Popconfirm
+                                title={t('confirmArchiveChat')}
+                                description={t('confirmArchiveChatMessage')}
+                                onConfirm={() => onToggleArchive(chat.id)}
+                                onCancel={(e) => e?.stopPropagation()}
+                                okText={t('yes')}
+                                cancelText={t('no')}
+                                icon={<ExclamationCircleOutlined style={{ color: '#ff8c00' }} />}
+                              >
+                                <Button
+                                  type="text"
+                                  size="small"
+                                  icon={<FileZipOutlined />}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </Popconfirm>
+                            )}
                           </Tooltip>
                           <Dropdown
                             menu={{
@@ -1228,38 +1367,36 @@ const Sidebar = ({
       )}
 
       {/* Обработчик изменения размера сайдбара */}
-      {isSidebarResizable && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: -5,
-            width: 10,
-            height: '100%',
-            cursor: 'col-resize',
-            zIndex: 1000,
-            background: 'transparent'
-          }}
-          onMouseDown={(e) => {
-            e.preventDefault()
-            const startX = e.clientX
-            const startWidth = sidebarWidth
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: -5,
+          width: 10,
+          height: '100%',
+          cursor: 'col-resize',
+          zIndex: 1000,
+          background: 'transparent'
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault()
+          const startX = e.clientX
+          const startWidth = sidebarWidth
 
-            const handleMouseMove = (e) => {
-              const newWidth = startWidth + (e.clientX - startX)
-              handleSidebarResize(newWidth)
-            }
+          const handleMouseMove = (e) => {
+            const newWidth = startWidth + (e.clientX - startX)
+            handleSidebarResize(newWidth)
+          }
 
-            const handleMouseUp = () => {
-              document.removeEventListener('mousemove', handleMouseMove)
-              document.removeEventListener('mouseup', handleMouseUp)
-            }
+          const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove)
+            document.removeEventListener('mouseup', handleMouseUp)
+          }
 
-            document.addEventListener('mousemove', handleMouseMove)
-            document.addEventListener('mouseup', handleMouseUp)
-          }}
-        />
-      )}
+          document.addEventListener('mousemove', handleMouseMove)
+          document.addEventListener('mouseup', handleMouseUp)
+        }}
+      />
 
     </Sider>
   )

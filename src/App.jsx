@@ -779,6 +779,105 @@ function App() {
     return () => clearInterval(interval)
   }, [chats, currentChatId])
 
+  // Функция для автоматической отправки сообщений в тестовый чат
+  const startTestMessageSending = () => {
+    const testChatId = 1 // ID чата "Анна Петрова" для тестирования
+    const testMessages = [
+      "Привет! Как дела?",
+      "Что нового?",
+      "Как работа?",
+      "Встретимся завтра?",
+      "Отлично! До встречи!",
+      "Спасибо за помощь",
+      "Все получилось!",
+      "Отправляю документы",
+      "Проверь, пожалуйста",
+      "Все в порядке?",
+      "Нужна твоя помощь",
+      "Можешь перезвонить?",
+      "Жду ответа",
+      "Срочно!",
+      "Важная информация",
+      "Не забудь про встречу",
+      "Время изменилось",
+      "Переносим на завтра",
+      "Все готово",
+      "Можно начинать",
+      "Отличная работа!",
+      "Спасибо за терпение",
+      "До свидания!",
+      "Увидимся завтра",
+      "Удачи!"
+    ]
+
+    let messageCount = 0
+    const maxMessages = 25
+
+    const sendTestMessage = () => {
+      if (messageCount >= maxMessages) {
+        console.log('Достигнуто максимальное количество тестовых сообщений (25)')
+        return
+      }
+
+      const randomMessage = testMessages[Math.floor(Math.random() * testMessages.length)]
+      const newMessage = {
+        id: Date.now() + Math.random(),
+        content: randomMessage,
+        senderId: 2, // ID пользователя "Анна Петрова"
+        senderName: 'Анна Петрова',
+        timestamp: new Date(),
+        read: false,
+        type: 'text'
+      }
+
+      setChats(prevChats => 
+        prevChats.map(chat => {
+          if (chat.id === testChatId) {
+            const updatedMessages = [...chat.messages, newMessage]
+            const unreadCount = updatedMessages.filter(msg => !msg.read && msg.senderId !== currentUser?.id).length
+            return {
+              ...chat,
+              messages: updatedMessages,
+              unreadCount: unreadCount,
+              lastMessage: randomMessage,
+              lastMessageTime: new Date()
+            }
+          }
+          return chat
+        })
+      )
+
+      messageCount++
+      console.log(`Отправлено тестовое сообщение ${messageCount}/${maxMessages}: "${randomMessage}"`)
+    }
+
+    // Отправляем первое сообщение сразу
+    sendTestMessage()
+
+    // Затем отправляем сообщения каждые 2 секунды
+    const interval = setInterval(() => {
+      sendTestMessage()
+      
+      if (messageCount >= maxMessages) {
+        clearInterval(interval)
+        console.log('Автоматическая отправка тестовых сообщений завершена')
+      }
+    }, 2000)
+
+    return interval
+  }
+
+  // Запускаем тестовую отправку сообщений при загрузке приложения
+  useEffect(() => {
+    const testInterval = startTestMessageSending()
+    
+    return () => {
+      if (testInterval) {
+        clearInterval(testInterval)
+      }
+    }
+  }, [])
+
   return (
     <ConfigProvider locale={ruRU}>
       <Layout className="app-container">
@@ -815,6 +914,7 @@ function App() {
             onDeleteLabel={deleteLabel}
             onSaveLabelToPreset={saveLabelToPreset}
             getFilteredChatsByGroup={getFilteredChatsByGroup}
+            userMatchesGroupFilter={userMatchesGroupFilter}
           />
         )}
 

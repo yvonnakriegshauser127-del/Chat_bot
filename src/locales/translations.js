@@ -36,6 +36,8 @@ export const translations = {
     addToFavorites: 'Добавить в избранные',
     returnFromArchive: 'Вернуть из архива',
     moveToArchive: 'Переместить в архив',
+    confirmArchiveChat: 'Архивировать чат?',
+    confirmArchiveChatMessage: 'Вы уверены, что хотите перенести чат в архив?',
     
     // Шаблоны
     messageTemplates: 'Шаблоны сообщений',
@@ -206,6 +208,7 @@ export const translations = {
     forward: 'Переслать',
     forwardMessage: 'Переслать сообщение',
     markAsUnread: 'Отметить как непрочитанное',
+    markAsRead: 'Отметить как прочитанное',
     participantsCount: 'Участников',
     translation: 'Перевод:',
     translatingMessage: 'Переводим сообщение...'
@@ -248,6 +251,8 @@ export const translations = {
     addToFavorites: 'Додати в обране',
     returnFromArchive: 'Повернути з архіву',
     moveToArchive: 'Перемістити в архів',
+    confirmArchiveChat: 'Архівувати чат?',
+    confirmArchiveChatMessage: 'Ви впевнені, що хочете перенести чат в архів?',
     
     // Шаблони
     messageTemplates: 'Шаблони повідомлень',
@@ -418,6 +423,7 @@ export const translations = {
     forward: 'Переслати',
     forwardMessage: 'Переслати повідомлення',
     markAsUnread: 'Позначити як непрочитане',
+    markAsRead: 'Позначити як прочитане',
     participantsCount: 'Учасників',
     translation: 'Переклад:',
     translatingMessage: 'Перекладаємо повідомлення...'
@@ -460,6 +466,8 @@ export const translations = {
     addToFavorites: 'Add to favorites',
     returnFromArchive: 'Return from archive',
     moveToArchive: 'Move to archive',
+    confirmArchiveChat: 'Archive chat?',
+    confirmArchiveChatMessage: 'Are you sure you want to move this chat to archive?',
     
     // Templates
     messageTemplates: 'Message templates',
@@ -630,6 +638,7 @@ export const translations = {
     forward: 'Forward',
     forwardMessage: 'Forward message',
     markAsUnread: 'Mark as unread',
+    markAsRead: 'Mark as read',
     participantsCount: 'Participants',
     translation: 'Translation:',
     translatingMessage: 'Translating message...'

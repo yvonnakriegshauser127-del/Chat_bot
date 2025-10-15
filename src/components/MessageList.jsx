@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { List, Empty } from 'antd'
 import StructuredMessage from './StructuredMessage'
 import './MessageList.css'
 
-const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '' }) => {
+const MessageList = ({ chatId, messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '' }) => {
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
-  const hasScrolledToUnreadRef = useRef(false)
+  const [hasScrolledToUnread, setHasScrolledToUnread] = useState(false)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -28,7 +28,7 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onRe
             behavior: 'smooth', 
             block: 'center' // Центрируем сообщение в viewport
           })
-          hasScrolledToUnreadRef.current = true
+          setHasScrolledToUnread(true)
           return
         }
       }
@@ -39,10 +39,10 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onRe
   }
 
   useEffect(() => {
-    // Сбрасываем флаг при изменении сообщений (новый чат)
-    hasScrolledToUnreadRef.current = false
+    // Сбрасываем флаг при смене чата
+    setHasScrolledToUnread(false)
     scrollToFirstUnread()
-  }, [messages])
+  }, [chatId]) // Используем chatId вместо messages, чтобы срабатывало только при смене чата
 
   if (messages.length === 0) {
     return (
@@ -59,10 +59,11 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onRe
     <div className="chat-messages">
       <div ref={messagesContainerRef} className="messages-container">
         {messages.map((message, index) => {
-          // Определяем, является ли это первым непрочитанным сообщением
-          const isFirstUnread = !message.read && 
-            message.senderId !== currentUser?.id && 
-            !messages.slice(0, index).some(msg => !msg.read && msg.senderId !== currentUser?.id)
+          // Определяем, является ли сообщение непрочитанным от другого пользователя
+          const isUnread = !message.read && message.senderId !== currentUser?.id
+          
+          // Определяем, является ли сообщение одним из двух последних
+          const isLastTwoMessages = index >= messages.length - 2
           
           return (
             <StructuredMessage
@@ -78,8 +79,8 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onRe
               onMarkAsUnread={onMarkAsUnread}
               onMarkAsRead={onMarkAsRead}
               activeSearchTerm={activeSearchTerm}
-              isFirstUnread={isFirstUnread}
-              hasScrolledToUnread={hasScrolledToUnreadRef.current}
+              isUnread={isUnread}
+              isLastTwoMessages={isLastTwoMessages}
             />
           )
         })}

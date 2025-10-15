@@ -256,6 +256,7 @@ const ChatWindow = ({
         </div>
 
         <MessageList 
+          chatId={chat.id}
           messages={chat.messages} 
           currentUser={currentUser}
           users={users}
