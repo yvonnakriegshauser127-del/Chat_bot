@@ -102,7 +102,13 @@ const Sidebar = ({
     setActiveFilters(prev => {
       // Если выбран "Все чаты", снимаем все остальные фильтры
       if (filter === 'all') {
-        // Также сбрасываем фильтр ярлыков
+        // Сбрасываем все пресеты
+        setSelectedPresets([])
+        if (onPresetSelect) {
+          onPresetSelect(null)
+        }
+        // Сбрасываем фильтр ярлыков
+        setSelectedLabelFilters([])
         if (onGroupFilterSelect) {
           onGroupFilterSelect(null)
         }
@@ -114,7 +120,33 @@ const Sidebar = ({
         const newFilters = prev.filter(f => f !== filter)
         // Если остались только 'all' или вообще ничего, возвращаем ['all']
         const nonAllFilters = newFilters.filter(f => f !== 'all')
-        return nonAllFilters.length === 0 ? ['all'] : newFilters
+        
+        // Проверяем, были ли сняты все платформенные фильтры из пресета
+        const platformFilters = ['amazon', 'instagram', 'email', 'tiktok']
+        const remainingPlatformFilters = newFilters.filter(f => platformFilters.includes(f))
+        
+        // Если сняты все платформенные фильтры, сбрасываем пресеты и ярлыки
+        if (remainingPlatformFilters.length === 0) {
+          // Проверяем, есть ли выбранные пресеты
+          if (selectedPresets.length > 0) {
+            // Сбрасываем пресеты
+            setSelectedPresets([])
+            if (onPresetSelect) {
+              onPresetSelect(null)
+            }
+            // Сбрасываем ярлыки из пресетов
+            setSelectedLabelFilters([])
+            if (onGroupFilterSelect) {
+              onGroupFilterSelect(null)
+            }
+          }
+        }
+        
+        // Если нет других фильтров и нет выбранных ярлыков, активируем "Все чаты"
+        if (nonAllFilters.length === 0 && selectedLabelFilters.length === 0) {
+          return ['all']
+        }
+        return newFilters
       }
       
       // Если "Все чаты" уже выбран и нет других фильтров, заменяем его на новый фильтр
@@ -122,8 +154,9 @@ const Sidebar = ({
         return [filter]
       }
       
-      // Добавляем новый фильтр (сохраняем 'all' если он есть)
-      return [...prev, filter]
+      // Добавляем новый фильтр (сохраняем 'all' если он есть, но убираем его если добавляем другой фильтр)
+      const filtersWithoutAll = prev.filter(f => f !== 'all')
+      return [...filtersWithoutAll, filter]
     })
   }
 
@@ -314,6 +347,9 @@ const Sidebar = ({
             }
           })
           matches.push(matchesPlatform)
+        } else {
+          // Если нет платформенных фильтров, считаем что чат соответствует (показываем все платформы)
+          matches.push(true)
         }
         
         // Проверяем соответствие статусным фильтрам
@@ -349,8 +385,8 @@ const Sidebar = ({
         // Если нет активных фильтров, чат не соответствует
         if (matches.length === 0) return false
         
-        // Чат соответствует, если соответствует хотя бы одному типу фильтров (логика ИЛИ)
-        return matches.some(match => match)
+        // Чат соответствует, если соответствует ВСЕМ типам фильтров (логика И)
+        return matches.every(match => match)
       })
     } else if (activeFilters.includes('all')) {
       // Если только "Все чаты", показываем только неархивные чаты
@@ -890,14 +926,42 @@ const Sidebar = ({
                     if (prev.some(filter => filter.id === group.id)) {
                       // Убираем ярлык из выбранных
                       const newFilters = prev.filter(filter => filter.id !== group.id)
-                      // Если больше нет выбранных ярлыков, сбрасываем в App
-                      if (newFilters.length === 0 && onGroupFilterSelect) {
-                        onGroupFilterSelect(null)
+                      
+                      // Если больше нет выбранных ярлыков, сбрасываем в App и активируем "Все чаты"
+                      if (newFilters.length === 0) {
+                        if (onGroupFilterSelect) {
+                          onGroupFilterSelect(null)
+                        }
+                        // Активируем "Все чаты" если нет других активных фильтров
+                        const hasOtherFilters = activeFilters.some(f => f !== 'all')
+                        if (!hasOtherFilters) {
+                          setActiveFilters(['all'])
+                        }
+                      } else {
+                        // Обновляем виртуальный фильтр для оставшихся ярлыков
+                        if (onGroupFilterSelect) {
+                          const virtualGroupFilter = {
+                            id: 'multiple-labels',
+                            name: `Ярлыки (${newFilters.length})`,
+                            description: `Выбранные ярлыки: ${newFilters.map(f => f.name).join(', ')}`,
+                            color: '#1890ff',
+                            textColor: '#ffffff',
+                            conditions: {
+                              labels: newFilters.flatMap(f => f.conditions.labels),
+                              matchType: 'any'
+                            }
+                          }
+                          onGroupFilterSelect(virtualGroupFilter)
+                        }
                       }
                       return newFilters
                     } else {
                       // Добавляем ярлык к выбранным
                       const newFilters = [...prev, group]
+                      
+                      // Убираем "Все чаты" из активных фильтров при выборе ярлыка
+                      setActiveFilters(prev => prev.filter(f => f !== 'all'))
+                      
                       // Уведомляем App о выборе (передаем виртуальный фильтр для множественных ярлыков)
                       if (onGroupFilterSelect) {
                         const virtualGroupFilter = {
@@ -1045,7 +1109,7 @@ const Sidebar = ({
           {/* Первая строка - статусные фильтры */}
           <div style={{ marginBottom: '8px' }}>
             <Button 
-              type={activeFilters.includes('all') ? 'primary' : 'text'}
+              type={activeFilters.includes('all') && selectedLabelFilters.length === 0 ? 'primary' : 'text'}
               onClick={() => handleFilterToggle('all')}
               style={{ marginRight: '4px' }}
             >
@@ -1233,61 +1297,63 @@ const Sidebar = ({
                               </Popconfirm>
                             )}
                           </Tooltip>
-                          <Dropdown
-                            menu={{
-                              items: [
-                                {
-                                  key: 'manageLabels',
-                                  label: (
-                                    <Space>
-                                      <TagOutlined />
-                                      {t('manageLabels')}
-                                    </Space>
-                                  ),
-                                  onClick: () => {
-                                    const participantId = chat.participants.find(id => id !== currentUser.id)
-                                    const participant = users.find(u => u.id === participantId)
-                                    if (participant) {
-                                      setSelectedUserForLabels(participant)
-                                      setShowLabelsModal(true)
-                                    }
-                                  }
-                                },
-                                {
-                                  key: 'saveToPreset',
-                                  label: (
-                                    <Space>
-                                      <PlusOutlined />
-                                      {t('saveToPreset')}
-                                    </Space>
-                                  ),
-                                  children: presets.map(preset => ({
-                                    key: `preset-${preset.id}`,
-                                    label: preset.name,
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Dropdown
+                              menu={{
+                                items: [
+                                  {
+                                    key: 'manageLabels',
+                                    label: (
+                                      <Space>
+                                        <TagOutlined />
+                                        {t('manageLabels')}
+                                      </Space>
+                                    ),
                                     onClick: () => {
                                       const participantId = chat.participants.find(id => id !== currentUser.id)
-                                      if (participantId) {
-                                        handleSaveLabelToPreset(participantId, preset.id)
+                                      const participant = users.find(u => u.id === participantId)
+                                      if (participant) {
+                                        setSelectedUserForLabels(participant)
+                                        setShowLabelsModal(true)
                                       }
                                     }
-                                  }))
-                                }
-                              ]
-                            }}
-                            trigger={['click']}
-                            placement="bottomLeft"
-                            align={{ offset: [0, 4] }}
-                          >
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<MoreOutlined />}
-                              onClick={(e) => e.stopPropagation()}
-                              style={{
-                                color: '#666'
+                                  },
+                                  {
+                                    key: 'saveToPreset',
+                                    label: (
+                                      <Space>
+                                        <PlusOutlined />
+                                        {t('saveToPreset')}
+                                      </Space>
+                                    ),
+                                    children: presets.map(preset => ({
+                                      key: `preset-${preset.id}`,
+                                      label: preset.name,
+                                      onClick: () => {
+                                        const participantId = chat.participants.find(id => id !== currentUser.id)
+                                        if (participantId) {
+                                          handleSaveLabelToPreset(participantId, preset.id)
+                                        }
+                                      }
+                                    }))
+                                  }
+                                ]
                               }}
-                            />
-                          </Dropdown>
+                              trigger={['click']}
+                              placement="bottomLeft"
+                              align={{ offset: [0, 4] }}
+                            >
+                              <Button
+                                type="text"
+                                size="small"
+                                icon={<MoreOutlined />}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  color: '#666'
+                                }}
+                              />
+                            </Dropdown>
+                          </div>
                         </div>
                       </div>
                     }

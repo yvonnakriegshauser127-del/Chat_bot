@@ -54,7 +54,9 @@ const ChatWindow = ({
 }) => {
   const [messageInput, setMessageInput] = useState('')
   const [replyingTo, setReplyingTo] = useState(null)
+  const [selectedFiles, setSelectedFiles] = useState([])
   const messageInputRef = useRef(null)
+  const fileInputRef = useRef(null)
   const { t } = useTranslation(targetLanguage)
 
   useEffect(() => {
@@ -87,10 +89,11 @@ const ChatWindow = ({
   }, [onInsertTemplate])
 
   const handleSendMessage = () => {
-    if (messageInput?.trim()) {
-      onSendMessage(messageInput, replyingTo)
+    if (messageInput?.trim() || selectedFiles.length > 0) {
+      onSendMessage(messageInput, replyingTo, selectedFiles)
       setMessageInput('')
       setReplyingTo(null)
+      setSelectedFiles([])
     }
   }
 
@@ -103,6 +106,23 @@ const ChatWindow = ({
 
   const handleCancelReply = () => {
     setReplyingTo(null)
+  }
+
+  const handleFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files)
+    setSelectedFiles(prev => [...prev, ...files])
+    // Очищаем input для возможности выбора того же файла снова
+    e.target.value = ''
+  }
+
+  const handleRemoveFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   const getChatStatus = () => {
@@ -270,6 +290,53 @@ const ChatWindow = ({
         />
             
             <div className="chat-input-container">
+          {/* Скрытый input для выбора файлов */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+            accept="*/*"
+          />
+          
+          {/* Отображение выбранных файлов */}
+          {selectedFiles.length > 0 && (
+            <div style={{ 
+              padding: '8px 12px', 
+              backgroundColor: '#f5f5f5', 
+              borderBottom: '1px solid #d9d9d9',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '4px'
+            }}>
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 6px',
+                    backgroundColor: '#fff',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    fontSize: '12px'
+                  }}
+                >
+                  <span>{file.name}</span>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<CloseOutlined />}
+                    onClick={() => handleRemoveFile(index)}
+                    style={{ padding: '0', minWidth: '16px', height: '16px' }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          
           {/* Отображение ответа на сообщение */}
           {replyingTo && (
             <div style={{ 
@@ -336,6 +403,7 @@ const ChatWindow = ({
                       type="text" 
                       size="small"
                       icon={<PaperClipOutlined />}
+                      onClick={handleFileSelect}
                     />
                   </Tooltip>
                 </Space>
@@ -345,7 +413,7 @@ const ChatWindow = ({
                   type="primary"
                   icon={<SendOutlined />}
                   onClick={handleSendMessage}
-                  disabled={!messageInput?.trim()}
+                  disabled={!messageInput?.trim() && selectedFiles.length === 0}
                 />
               }
             />
