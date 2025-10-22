@@ -5,8 +5,7 @@ import {
   TranslationOutlined,
   MessageOutlined,
   SendOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined
+  EyeInvisibleOutlined
 } from '@ant-design/icons'
 import { translationService } from '../services/translationService'
 import { useTranslation } from '../hooks/useTranslation'
@@ -16,7 +15,7 @@ import './StructuredMessage.css'
 
 const { Text, Paragraph } = Typography
 
-const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isUnread = false, isLastTwoMessages = false }) => {
+const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isFirstUnread = false, hasScrolledToUnread = false }) => {
   const [translatedText, setTranslatedText] = useState('')
   const [translatedLanguage, setTranslatedLanguage] = useState('')
   const [socialLinks, setSocialLinks] = useState([])
@@ -33,7 +32,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
     message.read || false,
     onMarkAsRead,
     isOwnMessage,
-    isLastTwoMessages
+    hasScrolledToUnread
   )
 
   // Инъекция CSS стилей для предотвращения разбивания слов
@@ -117,33 +116,16 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
     }
   }
 
-  const handleToggleReadStatus = () => {
-    // Устанавливаем флаг ручного изменения статуса
-    setManuallyChanged(true)
-    
-    if (message.read) {
-      // Если сообщение прочитано, помечаем как непрочитанное
-      if (onMarkAsUnread) {
-        onMarkAsUnread(message.id)
-      }
-    } else {
-      // Если сообщение непрочитано, помечаем как прочитанное
-      if (onMarkAsRead) {
-        onMarkAsRead(message.id)
-      }
+  const handleMarkAsUnread = () => {
+    if (onMarkAsUnread) {
+      // Устанавливаем флаг ручного изменения статуса
+      setManuallyChanged(true)
+      onMarkAsUnread(message.id)
     }
   }
 
   const formatTime = (date) => {
-    // Проверяем, что date существует и преобразуем в объект Date
-    if (!date) return '--:--'
-    
-    const dateObj = date instanceof Date ? date : new Date(date)
-    
-    // Проверяем, что дата валидна
-    if (isNaN(dateObj.getTime())) return '--:--'
-    
-    return dateObj.toLocaleTimeString('ru-RU', { 
+    return date.toLocaleTimeString('ru-RU', { 
       hour: '2-digit', 
       minute: '2-digit' 
     })
@@ -267,7 +249,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
   }
 
   return (
-    <div ref={messageRef} id={id} className={`message ${isOwnMessage ? 'sent' : 'received'} ${isUnread ? 'unread' : ''}`}>
+    <div ref={messageRef} id={id} className={`message ${isOwnMessage ? 'sent' : 'received'} ${isFirstUnread ? 'first-unread' : ''}`}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
         <Avatar size="small" style={{ backgroundColor: '#87d068' }}>
           {getUserAvatar(message.senderId)}
@@ -309,9 +291,9 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                 <Button 
                   type="text" 
                   size="small"
-                  icon={message.read ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                  onClick={handleToggleReadStatus}
-                  title={message.read ? t('markAsUnread') : t('markAsRead')}
+                  icon={<EyeInvisibleOutlined />}
+                  onClick={handleMarkAsUnread}
+                  title={t('markAsUnread')}
                 />
               )}
             </Space>

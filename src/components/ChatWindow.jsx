@@ -22,9 +22,12 @@ import {
   ArrowLeftOutlined,
   CloseOutlined,
   UpOutlined,
-  DownOutlined
+  DownOutlined,
+  PushpinOutlined
 } from '@ant-design/icons'
 import MessageList from './MessageList'
+import PinnedMessages from './PinnedMessages'
+import PinnedMessagesSidebar from './PinnedMessagesSidebar'
 import './ChatWindow.css'
 
 const { Content } = Layout
@@ -50,20 +53,23 @@ const ChatWindow = ({
   searchResults,
   currentSearchIndex,
   onNextSearchResult,
-  onPreviousSearchResult
+  onPreviousSearchResult,
+  onTogglePinMessage,
+  hasAnyModalOpen
 }) => {
   const [messageInput, setMessageInput] = useState('')
   const [replyingTo, setReplyingTo] = useState(null)
   const [selectedFiles, setSelectedFiles] = useState([])
+  const [showPinnedSidebar, setShowPinnedSidebar] = useState(false)
   const messageInputRef = useRef(null)
   const fileInputRef = useRef(null)
   const { t } = useTranslation(targetLanguage)
 
   useEffect(() => {
-    if (!isMinimized && messageInputRef.current) {
+    if (!isMinimized && !hasAnyModalOpen && messageInputRef.current) {
       messageInputRef.current.focus()
     }
-  }, [isMinimized, chat])
+  }, [isMinimized, chat, hasAnyModalOpen])
 
   // Создаем ref для функции вставки шаблона
   const insertTemplateRef = useRef(null)
@@ -72,7 +78,7 @@ const ChatWindow = ({
   const insertTemplate = (templateContent) => {
     setMessageInput(templateContent)
     setTimeout(() => {
-      if (messageInputRef.current) {
+      if (messageInputRef.current && !hasAnyModalOpen) {
         messageInputRef.current.focus()
       }
     }, 0)
@@ -98,6 +104,7 @@ const ChatWindow = ({
   }
 
   const handleKeyPress = (e) => {
+    if (hasAnyModalOpen) return
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
@@ -123,6 +130,15 @@ const ChatWindow = ({
 
   const handleRemoveFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleUnpinAllMessages = () => {
+    if (!chat) return
+    
+    const pinnedMessages = chat.messages.filter(msg => msg.isPinned)
+    pinnedMessages.forEach(message => {
+      onTogglePinMessage(chat.id, message.id)
+    })
   }
 
   const getChatStatus = () => {
@@ -239,6 +255,17 @@ const ChatWindow = ({
             </div>
           </div>
           <Space>
+            {/* Кнопка закрепленных сообщений */}
+            {chat.messages.filter(msg => msg.isPinned).length > 0 && (
+              <Button 
+                type="text"
+                icon={<PushpinOutlined />}
+                onClick={() => setShowPinnedSidebar(true)}
+                style={{ color: '#1890ff' }}
+              >
+                {chat.messages.filter(msg => msg.isPinned).length} {t('pinnedMessages')}
+              </Button>
+            )}
             {/* Кнопки навигации по поиску */}
             {activeSearchTerm && searchResults.length > 1 && (
               <>
@@ -275,6 +302,14 @@ const ChatWindow = ({
           </Space>
         </div>
 
+        {/* Закрепленные сообщения */}
+        <PinnedMessages
+          pinnedMessages={chat.messages.filter(msg => msg.isPinned)}
+          onUnpinMessage={(messageId) => onTogglePinMessage(chat.id, messageId)}
+          onScrollToMessage={onScrollToMessage}
+          targetLanguage={targetLanguage}
+        />
+
         <MessageList 
           chatId={chat.id}
           messages={chat.messages} 
@@ -287,6 +322,7 @@ const ChatWindow = ({
           onMarkAsUnread={onMarkAsUnread}
           onMarkAsRead={onMarkAsRead}
           activeSearchTerm={activeSearchTerm}
+          onTogglePinMessage={onTogglePinMessage}
         />
             
             <div className="chat-input-container">
@@ -419,6 +455,18 @@ const ChatWindow = ({
             />
           </Space.Compact>
             </div>
+
+        {/* Боковая панель закрепленных сообщений */}
+        <PinnedMessagesSidebar
+          visible={showPinnedSidebar}
+          onClose={() => setShowPinnedSidebar(false)}
+          pinnedMessages={chat.messages.filter(msg => msg.isPinned)}
+          users={users}
+          currentUser={currentUser}
+          onScrollToMessage={onScrollToMessage}
+          onUnpinAll={handleUnpinAllMessages}
+          targetLanguage={targetLanguage}
+        />
       </div>
     </Content>
   )

@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import ChatWindow from './components/ChatWindow'
 import NewChatModal from './components/NewChatModal'
 import TemplatesModal from './components/TemplatesModal'
+import CreateFolderModal from './components/CreateFolderModal'
 import GroupParticipantsModal from './components/GroupParticipantsModal'
 import ForwardMessageModal from './components/ForwardMessageModal'
 import ProfileSettingsModal from './components/ProfileSettingsModal'
@@ -17,6 +18,10 @@ function App() {
   const [currentChatId, setCurrentChatId] = useState(null)
   const [users, setUsers] = useState(testUsers)
   const [templates, setTemplates] = useState(testTemplates)
+  const [templateFolders, setTemplateFolders] = useState([
+    { id: 1, name: 'Общие', createdAt: new Date() },
+    { id: 2, name: 'Работа', createdAt: new Date() }
+  ])
   const [labels, setLabels] = useState(availableLabels)
   const [groups, setGroups] = useState(groupFilters)
   const [selectedGroupFilter, setSelectedGroupFilter] = useState(null)
@@ -28,6 +33,7 @@ function App() {
   const [targetLanguage, setTargetLanguage] = useState(() => localStorageUtils.getLanguage())
   const [showNewChatModal, setShowNewChatModal] = useState(false)
   const [showTemplatesModal, setShowTemplatesModal] = useState(false)
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false)
   const [showParticipantsModal, setShowParticipantsModal] = useState(false)
   const [showForwardModal, setShowForwardModal] = useState(false)
   const [forwardedMessage, setForwardedMessage] = useState(null)
@@ -175,9 +181,31 @@ function App() {
         preset.id === presetId
           ? {
               ...preset,
-              labels: preset.labels ? [...preset.labels, labelId] : [labelId]
+              labels: preset.labels 
+                ? preset.labels.includes(labelId) 
+                  ? preset.labels // Если ярлык уже есть, не добавляем дубликат
+                  : [...preset.labels, labelId] // Если ярлыка нет, добавляем
+                : [labelId] // Если массив ярлыков пустой, создаем новый
             }
           : preset
+      )
+    )
+  }
+
+  // Функция для закрепления/открепления сообщения
+  const togglePinMessage = (chatId, messageId) => {
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: chat.messages.map(message =>
+                message.id === messageId
+                  ? { ...message, isPinned: !message.isPinned }
+                  : message
+              )
+            }
+          : chat
       )
     )
   }
@@ -506,12 +534,42 @@ function App() {
 
   const [insertTemplateCallback, setInsertTemplateCallback] = useState(null)
 
+  // Создание новой папки для шаблонов
+  const createTemplateFolder = (folderData) => {
+    const newFolder = {
+      id: Date.now(),
+      name: folderData.name,
+      createdAt: new Date()
+    }
+    setTemplateFolders(prev => [...prev, newFolder])
+  }
+
+  // Удаление папки для шаблонов
+  const deleteTemplateFolder = (folderId) => {
+    // Переместить все шаблоны из удаляемой папки в папку "Общие" (id: 1)
+    const generalFolderId = 1
+    setTemplates(prev => prev.map(template => 
+      template.folderId === folderId ? { ...template, folderId: generalFolderId } : template
+    ))
+    
+    // Удалить папку
+    setTemplateFolders(prev => prev.filter(folder => folder.id !== folderId))
+  }
+
+  // Редактирование папки для шаблонов
+  const updateTemplateFolder = (folderId, newName) => {
+    setTemplateFolders(prev => prev.map(folder => 
+      folder.id === folderId ? { ...folder, name: newName } : folder
+    ))
+  }
+
   // Создание нового шаблона
   const createTemplate = (templateData) => {
     const newTemplate = {
       id: Date.now(),
       name: templateData.name,
-      content: templateData.content
+      content: templateData.content,
+      folderId: templateData.folderId || 1 // По умолчанию в папку "Общие"
     }
     setTemplates(prev => [...prev, newTemplate])
   }
@@ -815,7 +873,6 @@ function App() {
 
     const sendTestMessage = () => {
       if (messageCount >= maxMessages) {
-        console.log('Достигнуто максимальное количество тестовых сообщений (25)')
         return
       }
 
@@ -848,7 +905,6 @@ function App() {
       )
 
       messageCount++
-      console.log(`Отправлено тестовое сообщение ${messageCount}/${maxMessages}: "${randomMessage}"`)
     }
 
     // Отправляем первое сообщение сразу
@@ -860,7 +916,6 @@ function App() {
       
       if (messageCount >= maxMessages) {
         clearInterval(interval)
-        console.log('Автоматическая отправка тестовых сообщений завершена')
       }
     }, 2000)
 
@@ -934,11 +989,20 @@ function App() {
           onMarkAsRead={markMessageAsRead}
           onMarkAsUnread={markMessageAsUnread}
           onUpdateProfile={updateUserProfile}
+          onTogglePinMessage={togglePinMessage}
           activeSearchTerm={activeSearchTerm}
           searchResults={searchResults}
           currentSearchIndex={currentSearchIndex}
           onNextSearchResult={goToNextSearchResult}
           onPreviousSearchResult={goToPreviousSearchResult}
+          hasAnyModalOpen={
+            showNewChatModal ||
+            showTemplatesModal ||
+            showCreateFolderModal ||
+            showParticipantsModal ||
+            showForwardModal ||
+            showProfileModal
+          }
         />
 
         <NewChatModal
@@ -958,11 +1022,22 @@ function App() {
         <TemplatesModal
           visible={showTemplatesModal}
           templates={templates}
+          templateFolders={templateFolders}
           onClose={() => setShowTemplatesModal(false)}
           onSelectTemplate={insertTemplate}
           onCreateTemplate={createTemplate}
           onDeleteTemplate={deleteTemplate}
           onUpdateTemplate={updateTemplate}
+          onCreateFolder={() => setShowCreateFolderModal(true)}
+          onDeleteFolder={deleteTemplateFolder}
+          onUpdateFolder={updateTemplateFolder}
+          targetLanguage={targetLanguage}
+        />
+
+        <CreateFolderModal
+          visible={showCreateFolderModal}
+          onClose={() => setShowCreateFolderModal(false)}
+          onCreateFolder={createTemplateFolder}
           targetLanguage={targetLanguage}
         />
 

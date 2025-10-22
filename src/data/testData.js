@@ -188,7 +188,8 @@ export const initialChats = [
         senderName: 'Анна Петрова',
         content: 'Привет! Как дела с проектом?',
         timestamp: new Date(Date.now() - 3600000),
-        read: false
+        read: false,
+        isPinned: true
       },
       {
         id: 2,
@@ -196,7 +197,8 @@ export const initialChats = [
         senderName: 'Вы',
         content: 'Все идет по плану, спасибо!',
         timestamp: new Date(Date.now() - 3500000),
-        read: true
+        read: true,
+        isPinned: true
       },
       {
         id: 3,

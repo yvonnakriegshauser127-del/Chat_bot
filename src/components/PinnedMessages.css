@@ -1,0 +1,37 @@
+.pinned-messages-container {
+  margin-bottom: 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  background: #f6f6f6;
+}
+
+.pinned-message-card {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.pinned-message-card:hover {
+  background: #e6f7ff !important;
+}
+
+.pinned-message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pinned-message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pinned-message-preview {
+  margin-left: 20px;
+  font-style: italic;
+}
+
+.pinned-message-card .ant-card-body {
+  padding: 8px 12px;
+}

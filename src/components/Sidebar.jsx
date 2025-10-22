@@ -1312,7 +1312,10 @@ const Sidebar = ({
                               <Popconfirm
                                 title={t('confirmArchiveChat')}
                                 description={t('confirmArchiveChatMessage')}
-                                onConfirm={() => onToggleArchive(chat.id)}
+                                onConfirm={(e) => {
+                                  e?.stopPropagation()
+                                  onToggleArchive(chat.id)
+                                }}
                                 onCancel={(e) => e?.stopPropagation()}
                                 okText={t('yes')}
                                 cancelText={t('no')}
