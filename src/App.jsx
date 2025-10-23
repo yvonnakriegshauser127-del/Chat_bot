@@ -9,7 +9,7 @@ import CreateFolderModal from './components/CreateFolderModal'
 import GroupParticipantsModal from './components/GroupParticipantsModal'
 import ForwardMessageModal from './components/ForwardMessageModal'
 import ProfileSettingsModal from './components/ProfileSettingsModal'
-import { testUsers, testTemplates, initialChats, testStores, testEmails, testPresets, availableLabels, groupFilters } from './data/testData'
+import { testUsers, testTemplates, initialChats, testStores, testEmails, testInstagramAccounts, testTikTokAccounts, testPresets, availableLabels, groupFilters } from './data/testData'
 import { localStorageUtils } from './utils/localStorage'
 import './App.css'
 
@@ -29,6 +29,8 @@ function App() {
   const [selectedPreset, setSelectedPreset] = useState(null)
   const [stores] = useState(testStores)
   const [emails] = useState(testEmails)
+  const [instagramAccounts] = useState(testInstagramAccounts)
+  const [tiktokAccounts] = useState(testTikTokAccounts)
   const [searchTerm, setSearchTerm] = useState('')
   const [targetLanguage, setTargetLanguage] = useState(() => localStorageUtils.getLanguage())
   const [showNewChatModal, setShowNewChatModal] = useState(false)
@@ -956,6 +958,8 @@ function App() {
             onDeletePreset={deletePreset}
             stores={stores}
             emails={emails}
+            instagramAccounts={instagramAccounts}
+            tiktokAccounts={tiktokAccounts}
             targetLanguage={targetLanguage}
             onShowProfileSettings={() => setShowProfileModal(true)}
             currentUser={currentUser}

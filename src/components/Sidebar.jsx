@@ -29,6 +29,8 @@ const Sidebar = ({
   onDeletePreset,
   stores,
   emails,
+  instagramAccounts = [],
+  tiktokAccounts = [],
   targetLanguage,
   onShowProfileSettings,
   currentUser,
@@ -264,9 +266,11 @@ const Sidebar = ({
       // Получаем фильтры из пресетов
       const presetFilters = getFiltersFromPresets()
       
-      // Собираем все критерии из всех выбранных пресетов (включая stores и emails)
+      // Собираем все критерии из всех выбранных пресетов (включая stores, emails, instagram, tiktok)
       const allStores = []
       const allEmails = []
+      const allInstagram = []
+      const allTiktok = []
 
       selectedPresets.forEach(presetId => {
         const preset = presets.find(p => p.id === presetId)
@@ -277,12 +281,20 @@ const Sidebar = ({
           if (preset.emails && preset.emails.length > 0) {
             allEmails.push(...preset.emails)
           }
+          if (preset.instagram && preset.instagram.length > 0) {
+            allInstagram.push(...preset.instagram)
+          }
+          if (preset.tiktok && preset.tiktok.length > 0) {
+            allTiktok.push(...preset.tiktok)
+          }
         }
       })
 
       // Убираем дубликаты
       const uniqueStores = [...new Set(allStores)]
       const uniqueEmails = [...new Set(allEmails)]
+      const uniqueInstagram = [...new Set(allInstagram)]
+      const uniqueTiktok = [...new Set(allTiktok)]
 
       // Фильтруем чаты по собранным критериям
       filteredChats = filteredChats.filter(chat => {
@@ -301,6 +313,20 @@ const Sidebar = ({
         // Проверяем соответствие email адресам
         if (uniqueEmails.length > 0) {
           matches.push(chat.email && uniqueEmails.includes(chat.email))
+        }
+
+        // Проверяем соответствие Instagram аккаунтам
+        if (uniqueInstagram.length > 0) {
+          // Для Instagram проверяем, есть ли у чата соответствующий аккаунт
+          const chatInstagram = chat.instagram || `@${chat.name.toLowerCase().replace(/\s+/g, '_')}`
+          matches.push(uniqueInstagram.includes(chatInstagram))
+        }
+
+        // Проверяем соответствие TikTok аккаунтам
+        if (uniqueTiktok.length > 0) {
+          // Для TikTok проверяем, есть ли у чата соответствующий аккаунт
+          const chatTiktok = chat.tiktok || `@${chat.name.toLowerCase().replace(/\s+/g, '_')}`
+          matches.push(uniqueTiktok.includes(chatTiktok))
         }
 
         // Проверяем соответствие ярлыкам пользователя (используем фильтры из пресетов)
@@ -486,6 +512,63 @@ const Sidebar = ({
   const handleSaveLabelToPreset = (labelId, presetId) => {
     if (onSaveLabelToPreset) {
       onSaveLabelToPreset(labelId, presetId)
+    }
+  }
+
+  // Функция для добавления идентификатора пользователя в пресет
+  const addUserIdentifierToPreset = (chat, presetId) => {
+    const participantId = chat.participants.find(id => id !== currentUser.id)
+    if (!participantId) return
+
+    const participant = users.find(u => u.id === participantId)
+    if (!participant) return
+
+    // Определяем идентификатор пользователя в зависимости от платформы чата
+    let userIdentifier = null
+    let fieldToUpdate = null
+
+    switch (chat.platform) {
+      case 'email':
+        userIdentifier = chat.email
+        fieldToUpdate = 'emails'
+        break
+      case 'amazon':
+        userIdentifier = chat.brandName
+        fieldToUpdate = 'stores'
+        break
+      case 'instagram':
+        // Предполагаем, что у пользователя есть Instagram аккаунт
+        userIdentifier = `@${participant.name.toLowerCase().replace(/\s+/g, '_')}`
+        fieldToUpdate = 'instagram'
+        break
+      case 'tiktok':
+        // Предполагаем, что у пользователя есть TikTok аккаунт
+        userIdentifier = `@${participant.name.toLowerCase().replace(/\s+/g, '_')}`
+        fieldToUpdate = 'tiktok'
+        break
+      default:
+        return
+    }
+
+    if (userIdentifier && fieldToUpdate) {
+      // Находим пресет и обновляем соответствующее поле
+      const preset = presets.find(p => p.id === presetId)
+      if (preset) {
+        const currentValues = preset[fieldToUpdate] || []
+        
+        // Проверяем, нет ли уже этого идентификатора в пресете
+        if (!currentValues.includes(userIdentifier)) {
+          const updatedPreset = {
+            ...preset,
+            [fieldToUpdate]: [...currentValues, userIdentifier]
+          }
+          
+          // Обновляем пресет через onCreatePreset (который обрабатывает и создание, и редактирование)
+          if (onCreatePreset) {
+            onCreatePreset(updatedPreset)
+          }
+        }
+      }
     }
   }
 
@@ -1365,7 +1448,8 @@ const Sidebar = ({
                                     onClick: () => {
                                       const participantId = chat.participants.find(id => id !== currentUser.id)
                                       if (participantId) {
-                                        handleSaveLabelToPreset(participantId, preset.id)
+                                        // Добавляем идентификатор пользователя в пресет
+                                        addUserIdentifierToPreset(chat, preset.id)
                                       }
                                     }
                                   }))
@@ -1405,6 +1489,8 @@ const Sidebar = ({
           onCreatePreset={onCreatePreset}
           stores={stores}
           emails={emails}
+          instagramAccounts={instagramAccounts}
+          tiktokAccounts={tiktokAccounts}
           labels={labels}
           targetLanguage={targetLanguage}
         />
@@ -1458,6 +1544,8 @@ const Sidebar = ({
           onCreatePreset={onCreatePreset}
           stores={stores}
           emails={emails}
+          instagramAccounts={instagramAccounts}
+          tiktokAccounts={tiktokAccounts}
           labels={labels}
           targetLanguage={targetLanguage}
           initialValues={editingPreset}

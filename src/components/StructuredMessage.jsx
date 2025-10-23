@@ -5,7 +5,8 @@ import {
   TranslationOutlined,
   MessageOutlined,
   SendOutlined,
-  EyeInvisibleOutlined
+  EyeInvisibleOutlined,
+  PushpinOutlined
 } from '@ant-design/icons'
 import { translationService } from '../services/translationService'
 import { useTranslation } from '../hooks/useTranslation'
@@ -15,7 +16,7 @@ import './StructuredMessage.css'
 
 const { Text, Paragraph } = Typography
 
-const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isFirstUnread = false, hasScrolledToUnread = false }) => {
+const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isFirstUnread = false, hasScrolledToUnread = false, onTogglePinMessage }) => {
   const [translatedText, setTranslatedText] = useState('')
   const [translatedLanguage, setTranslatedLanguage] = useState('')
   const [socialLinks, setSocialLinks] = useState([])
@@ -124,6 +125,12 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
     }
   }
 
+  const handleTogglePin = () => {
+    if (onTogglePinMessage) {
+      onTogglePinMessage(message.id)
+    }
+  }
+
   const formatTime = (date) => {
     return date.toLocaleTimeString('ru-RU', { 
       hour: '2-digit', 
@@ -227,6 +234,20 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
               <Button 
                 type="text" 
                 size="small"
+                icon={<PushpinOutlined />}
+                onClick={handleTogglePin}
+                title={message.isPinned ? t('unpinMessage') : t('pinMessage')}
+                style={{ 
+                  color: message.isPinned ? '#1890ff' : undefined,
+                  height: '14px',
+                  width: '14px',
+                  minWidth: '14px',
+                  padding: '0'
+                }}
+              />
+              <Button 
+                type="text" 
+                size="small"
                 icon={<SendOutlined />}
                 onClick={handleForwardMessage}
                 title={t('forwardMessage')}
@@ -286,6 +307,20 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                 onClick={handleShowTranslation}
                 loading={isTranslating}
                 title={showTranslation ? t('hideTranslation') : t('showTranslation')}
+              />
+              <Button 
+                type="text" 
+                size="small"
+                icon={<PushpinOutlined />}
+                onClick={handleTogglePin}
+                title={message.isPinned ? t('unpinMessage') : t('pinMessage')}
+                style={{ 
+                  color: message.isPinned ? '#1890ff' : undefined,
+                  height: '14px',
+                  width: '14px',
+                  minWidth: '14px',
+                  padding: '0'
+                }}
               />
               {!isOwnMessage && (
                 <Button 

@@ -322,7 +322,7 @@ const ChatWindow = ({
           onMarkAsUnread={onMarkAsUnread}
           onMarkAsRead={onMarkAsRead}
           activeSearchTerm={activeSearchTerm}
-          onTogglePinMessage={onTogglePinMessage}
+          onTogglePinMessage={(messageId) => onTogglePinMessage(chat.id, messageId)}
         />
             
             <div className="chat-input-container">

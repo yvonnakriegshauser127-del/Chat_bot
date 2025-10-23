@@ -130,6 +130,22 @@ export const testEmails = [
   { id: 5, address: 'info@company.com' }
 ]
 
+export const testInstagramAccounts = [
+  { id: 1, username: '@fashion_brand' },
+  { id: 2, username: '@tech_reviews' },
+  { id: 3, username: '@lifestyle_blog' },
+  { id: 4, username: '@beauty_tips' },
+  { id: 5, username: '@fitness_guru' }
+]
+
+export const testTikTokAccounts = [
+  { id: 1, username: '@viral_content' },
+  { id: 2, username: '@dance_challenges' },
+  { id: 3, username: '@comedy_skits' },
+  { id: 4, username: '@cooking_tips' },
+  { id: 5, username: '@tech_tutorials' }
+]
+
 export const testPresets = [
   {
     id: 1,
@@ -137,6 +153,8 @@ export const testPresets = [
     channels: ['amazon'],
     stores: ['Amazon Electronics'],
     emails: ['support@company.com'],
+    instagram: [],
+    tiktok: [],
     labels: ['sales'],
     createdAt: new Date(Date.now() - 86400000)
   },
@@ -146,6 +164,8 @@ export const testPresets = [
     channels: ['instagram'],
     stores: ['Instagram Fashion'],
     emails: ['marketing@company.com'],
+    instagram: ['@fashion_brand'],
+    tiktok: [],
     labels: ['marketing'],
     createdAt: new Date(Date.now() - 172800000)
   },
@@ -155,6 +175,8 @@ export const testPresets = [
     channels: ['amazon', 'instagram', 'email'],
     stores: ['Amazon Electronics', 'Instagram Fashion', 'TikTok Viral Campaign'],
     emails: ['marketing@company.com', 'sales@company.com'],
+    instagram: ['@fashion_brand', '@tech_reviews'],
+    tiktok: ['@viral_content'],
     labels: ['marketing', 'sales'],
     createdAt: new Date(Date.now() - 259200000)
   },
@@ -164,6 +186,8 @@ export const testPresets = [
     channels: ['tiktok'],
     stores: ['TikTok Viral Campaign'],
     emails: ['marketing@company.com'],
+    instagram: [],
+    tiktok: ['@viral_content', '@dance_challenges'],
     labels: ['marketing'],
     createdAt: new Date(Date.now() - 345600000)
   }

@@ -4,9 +4,10 @@ import { PlusOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOu
 import { useTranslation } from '../hooks/useTranslation'
 
 
-const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels = [], targetLanguage = 'ru', initialValues = null, isEdit = false }) => {
+const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, instagramAccounts = [], tiktokAccounts = [], labels = [], targetLanguage = 'ru', initialValues = null, isEdit = false }) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const [selectedChannels, setSelectedChannels] = useState([])
   const { t } = useTranslation(targetLanguage)
 
   // Инициализация формы при редактировании
@@ -23,10 +24,14 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
         channels: initialValues.channels || [],
         stores: initialValues.stores || [],
         emails: initialValues.emails || [],
+        instagram: initialValues.instagram || [],
+        tiktok: initialValues.tiktok || [],
         labels: validLabels
       })
+      setSelectedChannels(initialValues.channels || [])
     } else if (visible && !isEdit) {
       form.resetFields()
+      setSelectedChannels([])
     }
   }, [visible, initialValues, isEdit, form, labels])
 
@@ -47,6 +52,8 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
         channels: values.channels,
         stores: values.stores,
         emails: values.emails,
+        instagram: values.instagram || [],
+        tiktok: values.tiktok || [],
         labels: validLabels,
         createdAt: isEdit ? initialValues.createdAt : new Date()
       }
@@ -64,7 +71,15 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
 
   const handleCancel = () => {
     form.resetFields()
+    setSelectedChannels([])
     onClose()
+  }
+
+  const handleChannelsChange = (channels) => {
+    setSelectedChannels(channels)
+    
+    // НЕ очищаем поля при удалении каналов - оставляем значения для отображения в задизейбленном состоянии
+    // Поля будут дизейблиться автоматически через disabled={!selectedChannels.includes('channel')}
   }
 
   return (
@@ -108,6 +123,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
             style={{ width: '100%' }}
             maxTagCount="responsive"
             showSearch
+            onChange={handleChannelsChange}
             filterOption={(input, option) => {
               const searchText = input.toLowerCase()
               const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
@@ -158,8 +174,8 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
             }}
           >
             <Select.Option value="amazon">Amazon</Select.Option>
-            <Select.Option value="instagram">Instagram</Select.Option>
             <Select.Option value="email">Email</Select.Option>
+            <Select.Option value="instagram">Instagram</Select.Option>
             <Select.Option value="tiktok">TikTok</Select.Option>
           </Select>
         </Form.Item>
@@ -169,11 +185,13 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
           label={t('stores')}
         >
           <Select 
-            mode="multiple" 
+            mode="tags" 
             placeholder={t('selectStores')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
             showSearch
+            disabled={!selectedChannels.includes('amazon')}
+            allowClear
             filterOption={(input, option) => {
               const searchText = input.toLowerCase()
               const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
@@ -207,7 +225,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
             )}
           >
             {stores.map(store => (
-              <Select.Option key={store.id} value={store.id}>
+              <Select.Option key={`store-${store.id}`} value={store.name}>
                 {store.name}
               </Select.Option>
             ))}
@@ -219,11 +237,13 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
           label={t('emails')}
         >
           <Select 
-            mode="multiple" 
+            mode="tags" 
             placeholder={t('selectEmails')}
             style={{ width: '100%' }}
             maxTagCount="responsive"
             showSearch
+            disabled={!selectedChannels.includes('email')}
+            allowClear
             filterOption={(input, option) => {
               const searchText = input.toLowerCase()
               const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
@@ -257,8 +277,112 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
             )}
           >
             {emails.map(email => (
-              <Select.Option key={email.id} value={email.address}>
+              <Select.Option key={`email-${email.id}`} value={email.address}>
                 {email.address}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="instagram"
+          label={t('instagram')}
+        >
+          <Select 
+            mode="tags" 
+            placeholder={t('selectInstagram')}
+            style={{ width: '100%' }}
+            maxTagCount="responsive"
+            showSearch
+            disabled={!selectedChannels.includes('instagram')}
+            allowClear
+            filterOption={(input, option) => {
+              const searchText = input.toLowerCase()
+              const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
+              return optionText.includes(searchText)
+            }}
+            tagRender={({ label, value, closable, onClose }) => (
+              <div style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '4px',
+                background: '#f0f0f0',
+                border: '1px solid #d9d9d9',
+                borderRadius: '12px',
+                padding: '2px 8px',
+                margin: '2px',
+                fontSize: '12px',
+                height: '28px',
+                transition: 'all 0.2s ease'
+              }}>
+                <span>📷</span>
+                <span>{label}</span>
+                {closable && (
+                  <span 
+                    onClick={onClose}
+                    style={{ cursor: 'pointer', marginLeft: '4px' }}
+                  >
+                    ×
+                  </span>
+                )}
+              </div>
+            )}
+          >
+            {instagramAccounts.map(account => (
+              <Select.Option key={`instagram-${account.id}`} value={account.username}>
+                {account.username}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="tiktok"
+          label={t('tiktok')}
+        >
+          <Select 
+            mode="tags" 
+            placeholder={t('selectTiktok')}
+            style={{ width: '100%' }}
+            maxTagCount="responsive"
+            showSearch
+            disabled={!selectedChannels.includes('tiktok')}
+            allowClear
+            filterOption={(input, option) => {
+              const searchText = input.toLowerCase()
+              const optionText = (option?.label ?? option?.children ?? '').toString().toLowerCase()
+              return optionText.includes(searchText)
+            }}
+            tagRender={({ label, value, closable, onClose }) => (
+              <div style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '4px',
+                background: '#f0f0f0',
+                border: '1px solid #d9d9d9',
+                borderRadius: '12px',
+                padding: '2px 8px',
+                margin: '2px',
+                fontSize: '12px',
+                height: '28px',
+                transition: 'all 0.2s ease'
+              }}>
+                <span>🎬</span>
+                <span>{label}</span>
+                {closable && (
+                  <span 
+                    onClick={onClose}
+                    style={{ cursor: 'pointer', marginLeft: '4px' }}
+                  >
+                    ×
+                  </span>
+                )}
+              </div>
+            )}
+          >
+            {tiktokAccounts.map(account => (
+              <Select.Option key={`tiktok-${account.id}`} value={account.username}>
+                {account.username}
               </Select.Option>
             ))}
           </Select>
@@ -315,7 +439,7 @@ const PresetModal = ({ visible, onClose, onCreatePreset, stores, emails, labels 
             }}
           >
             {labels.map(label => (
-              <Select.Option key={label.id} value={label.id}>
+              <Select.Option key={`label-${label.id}`} value={label.id}>
                 {label.name}
               </Select.Option>
             ))}

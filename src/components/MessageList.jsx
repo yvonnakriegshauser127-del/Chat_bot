@@ -3,7 +3,7 @@ import { List, Empty } from 'antd'
 import StructuredMessage from './StructuredMessage'
 import './MessageList.css'
 
-const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '' }) => {
+const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', onTogglePinMessage }) => {
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const hasScrolledToUnreadRef = useRef(false)
@@ -81,6 +81,7 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onRe
               activeSearchTerm={activeSearchTerm}
               isFirstUnread={isFirstUnread}
               hasScrolledToUnread={hasScrolledToUnreadRef.current}
+              onTogglePinMessage={onTogglePinMessage}
             />
           )
         })}
