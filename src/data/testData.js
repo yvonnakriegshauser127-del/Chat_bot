@@ -115,7 +115,7 @@ export const testTemplates = [
 ]
 
 export const testStores = [
-  { id: 1, name: 'Electronics Store' },
+  { id: 1, name: 'Amazon Electronics' },
   { id: 2, name: 'Fashion Boutique' },
   { id: 3, name: 'Home & Garden' },
   { id: 4, name: 'Sports & Outdoors' },
@@ -261,8 +261,8 @@ export const initialChats = [
       {
         id: 4,
         senderId: 2,
-        senderName: 'RJ Martinez',
-        content: 'Hi, I\'m RJ Martinez, full-time Amazon Influencer with 3 + years of review work and 1,200 + product videos live across Amazon, YouTube & TikTok. I create hands-on demos, unboxings, and lifestyle scenes that answer shopper questions and nudge them to click "Add to Cart." What I deliver via Creator Connections. 60-90 s 4K review with voice-over Amazon-compliant captions & disclosures. 5-day turnaround once the sample arrives Recent wins. Pet bed demo. Grill tool review Some examples of products Simple workflow You ship a unit I film, edit, and upload we both track results in on dashboard. See my style Storefront - https://www.amazon.com/shop/printondemand-rjmartinez YouTube - https://www.youtube.com/@ltestedit89/videos TikTok - https://www.tiktok.com/@itestedit Launching a new SKU or refreshing a best-seller? Reply here and I\'ll reserve the next shoot slot for you. — RJ',
+        senderName: 'Анна Петрова',
+        content: 'Hi, I\'m RJ Martinez, full-time Amazon Influencer with 3 + years of review work and 1,200 + product videos live across Amazon, YouTube & TikTok. I create hands-on demos, unboxings, and lifestyle scenes that answer shopper questions and nudge them to click "Add to Cart." What I deliver via Creator Connections. 60-90 s 4K review with voice-over Amazon-compliant captions & disclosures. 5-day turnaround once the sample arrives Recent wins. Pet bed demo. Grill tool review Some examples of products Simple workflow You ship a unit I film, edit, and upload we both track results in on dashboard. See my style Storefront - https://www.amazon.com/stores/page/600E10CE-C8D2-4DF2-91B5-4D7EF7DDC7E0?ingress=2&lp_context_asin=B0DW48QHFY&lp_context_query=gaming&visitId=2d7cd424-748a-4d80-b24c-ce1dad9cc90f&store_ref=bl_ast_dp_brandLogo_sto&ref_=ast_bln YouTube - https://www.youtube.com/@Wylsacom/videos TikTok - https://www.tiktok.com/@fakewylsacom Launching a new SKU or refreshing a best-seller? Reply here and I\'ll reserve the next shoot slot for you. — RJ',
         timestamp: new Date(Date.now() - 2000000),
         read: false
       },

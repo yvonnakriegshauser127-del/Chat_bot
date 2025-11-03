@@ -2,6 +2,8 @@ export const translations = {
   ru: {
     // Общие
     chats: 'Чаты',
+    writeMessage: 'Написать сообщение',
+    massMailing: 'Массовая рассылка',
     searchChats: 'Поиск чатов...',
     allChats: 'Все чаты',
     favorites: 'Избранные',
@@ -65,8 +67,13 @@ export const translations = {
     createTemplate: 'Создать шаблон',
     viewTemplate: 'Просмотреть шаблон',
     editTemplate: 'Редактировать шаблон',
+    copyTemplate: 'Копировать шаблон',
     deleteTemplate: 'Удалить шаблон',
     viewTemplateTitle: 'Просмотр шаблона',
+    copyTemplateTitle: 'Копировать шаблон',
+    selectFoldersForCopy: 'Выберите папки для копирования',
+    selectFoldersForCopyMessage: 'Выберите папки, в которые нужно скопировать шаблон',
+    copyToSelectedFolders: 'Копировать в выбранные папки',
     editTemplateTitle: 'Редактировать шаблон',
     saveChanges: 'Сохранить изменения',
     close: 'Закрыть',
@@ -91,6 +98,9 @@ export const translations = {
     cancelEdit: 'Отмена',
     deleteFolderConfirm: 'Удалить папку?',
     deleteFolderDescription: 'Все шаблоны из этой папки будут перемещены в папку "Общие". Папка будет удалена.',
+    selectDesiredAction: 'Вы уверены, что хотите удалить эту папку?',
+    deleteFolder: 'Удалить папку',
+    deleteFolderAndTemplates: 'Удалить папку и шаблоны',
     
     // Группы
     createNewGroup: 'Создать новую группу',
@@ -246,12 +256,73 @@ export const translations = {
     markAsRead: 'Отметить как прочитанное',
     participantsCount: 'Участников',
     translation: 'Перевод:',
-    translatingMessage: 'Переводим сообщение...'
+    translatingMessage: 'Переводим сообщение...',
+    
+    // Social links analysis
+    analyzeSocialLinks: 'Анализ ссылок на соцсети',
+    analyzingLinks: 'Анализ ссылок на соцсети...',
+    invite: 'Пригласить',
+    reject: 'Отклонить',
+    analysisError: 'Ошибка при анализе ссылок',
+    
+    // Write message modal
+    writeMessageModal: 'Создать сообщение',
+    selectStores: 'Магазины',
+    selectBloggers: 'Получатели',
+    selectStoresPlaceholder: 'Выберите магазины',
+    selectBloggersPlaceholder: 'Выберите получателей',
+    messageText: 'Текст сообщения',
+    messageTextPlaceholder: 'Введите текст сообщения для отправки',
+    messageTextRequired: 'Введите текст сообщения',
+    sendMessage: 'Отправить сообщение',
+    noStoresSelected: 'Выберите хотя бы один магазин',
+    noBloggersSelected: 'Выберите хотя бы одного получателя',
+    promptCreatedSuccessfully: 'Промпт успешно создан',
+    promptUpdatedSuccessfully: 'Промпт обновлён',
+    promptDeletedSuccessfully: 'Промпт удалён',
+    deletePrompt: 'Удалить промпт?',
+    confirmDeletePrompt: 'Вы уверены, что хотите удалить этот промпт?',
+    promptTooltip: 'Данный промпт будет использоваться для оценки соцсетей блогеров',
+    
+    // Tabs
+    general: 'Общие',
+    messages: 'Сообщения',
+    messagesTabPlaceholder: 'Содержимое вкладки будет добавлено позже',
+    
+    // Messages tab
+    invitation: 'Приглашение',
+    rejection: 'Отказ',
+    createMessage: 'Создать сообщение',
+    savedMessages: 'Сохранённые сообщения',
+    selectMessagePlaceholder: 'Выберите сообщение',
+    messageNamePlaceholder: 'Название сообщения',
+    messageTextPlaceholder: 'Текст сообщения',
+    editMessage: 'Редактировать сообщение',
+    deleteMessage: 'Удалить сообщение?',
+    confirmDeleteMessage: 'Вы уверены, что хотите удалить это сообщение?',
+    messageCreatedSuccessfully: 'Сообщение успешно создано',
+    messageUpdatedSuccessfully: 'Сообщение обновлено',
+    messageDeletedSuccessfully: 'Сообщение удалено',
+    invitationTooltip: 'Данное сообщение будет отправлено пользователю для приглашения в кампанию',
+    rejectionTooltip: 'Данное сообщение будет отправлено пользователю при отказе присоединиться к кампании',
+    
+    // AI modal
+    aiTooltip: 'AI',
+    aiModalTitle: 'AI',
+    aiModel: 'Модель',
+    aiSavedPrompts: 'Сохранённые промпты',
+    aiCreatePrompt: 'Создать промпт',
+    aiSelectPromptPlaceholder: 'Выберите промпт',
+    aiPromptNamePlaceholder: 'Название промпта',
+    aiPromptTextPlaceholder: 'Текст промпта',
+    aiEditPrompt: 'Редактировать промпт'
   },
   
   uk: {
     // Загальні
     chats: 'Чати',
+    writeMessage: 'Написати повідомлення',
+    massMailing: 'Масове розсилання',
     searchChats: 'Пошук чатів...',
     allChats: 'Всі чати',
     favorites: 'Обране',
@@ -315,8 +386,13 @@ export const translations = {
     createTemplate: 'Створити шаблон',
     viewTemplate: 'Переглянути шаблон',
     editTemplate: 'Редагувати шаблон',
+    copyTemplate: 'Копіювати шаблон',
     deleteTemplate: 'Видалити шаблон',
     viewTemplateTitle: 'Перегляд шаблону',
+    copyTemplateTitle: 'Копіювати шаблон',
+    selectFoldersForCopy: 'Оберіть папки для копіювання',
+    selectFoldersForCopyMessage: 'Оберіть папки, в які потрібно скопіювати шаблон',
+    copyToSelectedFolders: 'Копіювати в обрані папки',
     editTemplateTitle: 'Редагування шаблону',
     saveChanges: 'Зберегти зміни',
     close: 'Закрити',
@@ -341,6 +417,9 @@ export const translations = {
     cancelEdit: 'Скасувати',
     deleteFolderConfirm: 'Видалити папку?',
     deleteFolderDescription: 'Всі шаблони з цієї папки будуть переміщені в папку "Загальні". Папка буде видалена.',
+    selectDesiredAction: 'Ви впевнені, що хочете видалити цю папку?',
+    deleteFolder: 'Видалити папку',
+    deleteFolderAndTemplates: 'Видалити папку і шаблони',
     
     // Групи
     createNewGroup: 'Створити нову групу',
@@ -496,12 +575,73 @@ export const translations = {
     markAsRead: 'Позначити як прочитане',
     participantsCount: 'Учасників',
     translation: 'Переклад:',
-    translatingMessage: 'Перекладаємо повідомлення...'
+    translatingMessage: 'Перекладаємо повідомлення...',
+    
+    // Social links analysis
+    analyzeSocialLinks: 'Аналіз посилань на соцмережі',
+    analyzingLinks: 'Аналіз посилань на соцмережі...',
+    invite: 'Запросити',
+    reject: 'Відхилити',
+    analysisError: 'Помилка при аналізі посилань',
+    
+    // Write message modal
+    writeMessageModal: 'Створити повідомлення',
+    selectStores: 'Магазини',
+    selectBloggers: 'Отримувачі',
+    selectStoresPlaceholder: 'Оберіть магазини',
+    selectBloggersPlaceholder: 'Оберіть отримувачів',
+    messageText: 'Текст повідомлення',
+    messageTextPlaceholder: 'Введіть текст повідомлення для відправки',
+    messageTextRequired: 'Введіть текст повідомлення',
+    sendMessage: 'Відправити повідомлення',
+    noStoresSelected: 'Оберіть хоча б один магазин',
+    noBloggersSelected: 'Оберіть хоча б одного отримувача',
+    promptCreatedSuccessfully: 'Промпт успішно створено',
+    promptUpdatedSuccessfully: 'Промпт оновлено',
+    promptDeletedSuccessfully: 'Промпт видалено',
+    deletePrompt: 'Видалити промпт?',
+    confirmDeletePrompt: 'Ви впевнені, що хочете видалити цей промпт?',
+    promptTooltip: 'Даний промпт буде використовуватися для оцінки соцмереж блогерів',
+    
+    // Tabs
+    general: 'Загальні',
+    messages: 'Повідомлення',
+    messagesTabPlaceholder: 'Вміст вкладки буде додано пізніше',
+    
+    // Messages tab
+    invitation: 'Запрошення',
+    rejection: 'Відмова',
+    createMessage: 'Створити повідомлення',
+    savedMessages: 'Збережені повідомлення',
+    selectMessagePlaceholder: 'Оберіть повідомлення',
+    messageNamePlaceholder: 'Назва повідомлення',
+    messageTextPlaceholder: 'Текст повідомлення',
+    editMessage: 'Редагувати повідомлення',
+    deleteMessage: 'Видалити повідомлення?',
+    confirmDeleteMessage: 'Ви впевнені, що хочете видалити це повідомлення?',
+    messageCreatedSuccessfully: 'Повідомлення успішно створено',
+    messageUpdatedSuccessfully: 'Повідомлення оновлено',
+    messageDeletedSuccessfully: 'Повідомлення видалено',
+    invitationTooltip: 'Дане повідомлення буде відправлено користувачу для запрошення в кампанію',
+    rejectionTooltip: 'Дане повідомлення буде відправлено користувачу при відмові приєднатися до кампанії',
+    
+    // AI modal
+    aiTooltip: 'AI',
+    aiModalTitle: 'AI',
+    aiModel: 'Модель',
+    aiSavedPrompts: 'Збережені промпти',
+    aiCreatePrompt: 'Створити промпт',
+    aiSelectPromptPlaceholder: 'Оберіть промпт',
+    aiPromptNamePlaceholder: 'Назва промпта',
+    aiPromptTextPlaceholder: 'Текст промпта',
+    aiEditPrompt: 'Редагувати промпт'
   },
   
   en: {
     // General
     chats: 'Chats',
+    writeMessage: 'Write message',
+    massMailing: 'Mass mailing',
     searchChats: 'Search chats...',
     allChats: 'All chats',
     favorites: 'Favorites',
@@ -565,8 +705,13 @@ export const translations = {
     createTemplate: 'Create template',
     viewTemplate: 'View template',
     editTemplate: 'Edit template',
+    copyTemplate: 'Copy template',
     deleteTemplate: 'Delete template',
     viewTemplateTitle: 'View template',
+    copyTemplateTitle: 'Copy template',
+    selectFoldersForCopy: 'Select folders for copying',
+    selectFoldersForCopyMessage: 'Select folders to copy the template to',
+    copyToSelectedFolders: 'Copy to selected folders',
     editTemplateTitle: 'Edit template',
     saveChanges: 'Save changes',
     close: 'Close',
@@ -591,6 +736,9 @@ export const translations = {
     cancelEdit: 'Cancel',
     deleteFolderConfirm: 'Delete folder?',
     deleteFolderDescription: 'All templates from this folder will be moved to the "General" folder. The folder will be deleted.',
+    selectDesiredAction: 'Are you sure you want to delete this folder?',
+    deleteFolder: 'Delete folder',
+    deleteFolderAndTemplates: 'Delete folder and templates',
     
     // Groups
     createNewGroup: 'Create new group',
@@ -746,7 +894,66 @@ export const translations = {
     markAsRead: 'Mark as read',
     participantsCount: 'Participants',
     translation: 'Translation:',
-    translatingMessage: 'Translating message...'
+    translatingMessage: 'Translating message...',
+    
+    // Social links analysis
+    analyzeSocialLinks: 'Analyze social media links',
+    analyzingLinks: 'Analyzing social media links...',
+    invite: 'Invite',
+    reject: 'Reject',
+    analysisError: 'Error analyzing links',
+    
+    // Write message modal
+    writeMessageModal: 'Create message',
+    selectStores: 'Stores',
+    selectBloggers: 'Recipients',
+    selectStoresPlaceholder: 'Select stores',
+    selectBloggersPlaceholder: 'Select recipients',
+    messageText: 'Message text',
+    messageTextPlaceholder: 'Enter message text to send',
+    messageTextRequired: 'Enter message text',
+    sendMessage: 'Send message',
+    noStoresSelected: 'Select at least one store',
+    noBloggersSelected: 'Select at least one recipient',
+    promptCreatedSuccessfully: 'Prompt created successfully',
+    promptUpdatedSuccessfully: 'Prompt updated successfully',
+    promptDeletedSuccessfully: 'Prompt deleted',
+    deletePrompt: 'Delete prompt?',
+    confirmDeletePrompt: 'Are you sure you want to delete this prompt?',
+    promptTooltip: 'This prompt will be used to evaluate bloggers\' social networks',
+    
+    // Tabs
+    general: 'General',
+    messages: 'Messages',
+    messagesTabPlaceholder: 'Tab content will be added later',
+    
+    // Messages tab
+    invitation: 'Invitation',
+    rejection: 'Rejection',
+    createMessage: 'Create message',
+    savedMessages: 'Saved messages',
+    selectMessagePlaceholder: 'Select a message',
+    messageNamePlaceholder: 'Message name',
+    messageTextPlaceholder: 'Message text',
+    editMessage: 'Edit message',
+    deleteMessage: 'Delete message?',
+    confirmDeleteMessage: 'Are you sure you want to delete this message?',
+    messageCreatedSuccessfully: 'Message created successfully',
+    messageUpdatedSuccessfully: 'Message updated successfully',
+    messageDeletedSuccessfully: 'Message deleted',
+    invitationTooltip: 'This message will be sent to the user to invite them to the campaign',
+    rejectionTooltip: 'This message will be sent to the user when they refuse to join the campaign',
+    
+    // AI modal
+    aiTooltip: 'AI',
+    aiModalTitle: 'AI',
+    aiModel: 'Model',
+    aiSavedPrompts: 'Saved prompts',
+    aiCreatePrompt: 'Create prompt',
+    aiSelectPromptPlaceholder: 'Select a prompt',
+    aiPromptNamePlaceholder: 'Prompt name',
+    aiPromptTextPlaceholder: 'Prompt text',
+    aiEditPrompt: 'Edit prompt'
   }
 }
 

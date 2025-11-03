@@ -3,7 +3,7 @@ import { List, Empty } from 'antd'
 import StructuredMessage from './StructuredMessage'
 import './MessageList.css'
 
-const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', onTogglePinMessage }) => {
+const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', onTogglePinMessage, chatId, onSendMessage, invitationMessages = [], rejectionMessages = [], selectedInvitationId, selectedRejectionId, selectedPrompt }) => {
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const hasScrolledToUnreadRef = useRef(false)
@@ -82,6 +82,13 @@ const MessageList = ({ messages, currentUser, users, targetLanguage = 'ru', onRe
               isFirstUnread={isFirstUnread}
               hasScrolledToUnread={hasScrolledToUnreadRef.current}
               onTogglePinMessage={onTogglePinMessage}
+              chatId={chatId}
+              onSendMessage={onSendMessage}
+              invitationMessages={invitationMessages}
+              rejectionMessages={rejectionMessages}
+              selectedInvitationId={selectedInvitationId}
+              selectedRejectionId={selectedRejectionId}
+              selectedPrompt={selectedPrompt}
             />
           )
         })}

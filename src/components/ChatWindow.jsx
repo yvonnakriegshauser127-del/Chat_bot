@@ -55,7 +55,12 @@ const ChatWindow = ({
   onNextSearchResult,
   onPreviousSearchResult,
   onTogglePinMessage,
-  hasAnyModalOpen
+  hasAnyModalOpen,
+  invitationMessages = [],
+  rejectionMessages = [],
+  selectedInvitationId,
+  selectedRejectionId,
+  selectedPrompt
 }) => {
   const [messageInput, setMessageInput] = useState('')
   const [replyingTo, setReplyingTo] = useState(null)
@@ -323,6 +328,12 @@ const ChatWindow = ({
           onMarkAsRead={onMarkAsRead}
           activeSearchTerm={activeSearchTerm}
           onTogglePinMessage={(messageId) => onTogglePinMessage(chat.id, messageId)}
+          onSendMessage={onSendMessage}
+          invitationMessages={invitationMessages}
+          rejectionMessages={rejectionMessages}
+          selectedInvitationId={selectedInvitationId}
+          selectedRejectionId={selectedRejectionId}
+          selectedPrompt={selectedPrompt}
         />
             
             <div className="chat-input-container">

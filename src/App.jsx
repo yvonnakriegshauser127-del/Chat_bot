@@ -42,6 +42,134 @@ function App() {
   const [isMinimized, setIsMinimized] = useState(false)
   const [currentGroupParticipants, setCurrentGroupParticipants] = useState([])
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [activeTab, setActiveTab] = useState('general') // Для управления активной вкладкой
+  const [aiSelectedModel, setAiSelectedModel] = useState(() => localStorage.getItem('aiSelectedModel') || 'gpt-4o-mini')
+  const [aiPrompts, setAiPrompts] = useState(() => {
+    try {
+      const raw = localStorage.getItem('aiPrompts')
+      return raw ? JSON.parse(raw) : []
+    } catch {
+      return []
+    }
+  })
+  const [aiSelectedPromptId, setAiSelectedPromptId] = useState(() => localStorage.getItem('aiSelectedPromptId') || null)
+
+  // Messages state (invitations and rejections)
+  const [invitationMessages, setInvitationMessages] = useState(() => {
+    try {
+      const raw = localStorage.getItem('invitationMessages')
+      const parsed = raw ? JSON.parse(raw) : []
+      // Если в localStorage нет сообщений, добавляем демонстрационное
+      if (parsed.length === 0) {
+        return [{
+          id: 'demo-invitation-1',
+          name: 'Приглашение в кампанию',
+          text: 'Здравствуйте! Мы хотели бы пригласить вас принять участие в нашей кампании. Ваш контент отлично подходит для нашего бренда. Пожалуйста, дайте знать, если вас это заинтересует.'
+        }]
+      }
+      return parsed
+    } catch {
+      return [{
+        id: 'demo-invitation-1',
+        name: 'Приглашение в кампанию',
+        text: 'Здравствуйте! Мы хотели бы пригласить вас принять участие в нашей кампании. Ваш контент отлично подходит для нашего бренда. Пожалуйста, дайте знать, если вас это заинтересует.'
+      }]
+    }
+  })
+  const [rejectionMessages, setRejectionMessages] = useState(() => {
+    try {
+      const raw = localStorage.getItem('rejectionMessages')
+      const parsed = raw ? JSON.parse(raw) : []
+      // Если в localStorage нет сообщений, добавляем демонстрационное
+      if (parsed.length === 0) {
+        return [{
+          id: 'demo-rejection-1',
+          name: 'Отказ от участия',
+          text: 'Спасибо за предложение. К сожалению, в данный момент мы не можем принять участие в кампании. Надеемся на сотрудничество в будущем.'
+        }]
+      }
+      return parsed
+    } catch {
+      return [{
+        id: 'demo-rejection-1',
+        name: 'Отказ от участия',
+        text: 'Спасибо за предложение. К сожалению, в данный момент мы не можем принять участие в кампании. Надеемся на сотрудничество в будущем.'
+      }]
+    }
+  })
+  const [selectedInvitationId, setSelectedInvitationId] = useState(() => localStorage.getItem('selectedInvitationId') || null)
+  const [selectedRejectionId, setSelectedRejectionId] = useState(() => localStorage.getItem('selectedRejectionId') || null)
+
+  // Сохранение AI настроек в localStorage
+  useEffect(() => {
+    localStorage.setItem('aiSelectedModel', aiSelectedModel)
+  }, [aiSelectedModel])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('aiPrompts', JSON.stringify(aiPrompts))
+    } catch {}
+  }, [aiPrompts])
+
+  useEffect(() => {
+    if (aiSelectedPromptId) {
+      localStorage.setItem('aiSelectedPromptId', aiSelectedPromptId)
+    } else {
+      localStorage.removeItem('aiSelectedPromptId')
+    }
+  }, [aiSelectedPromptId])
+
+  // Сохранение сообщений в localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('invitationMessages', JSON.stringify(invitationMessages))
+    } catch {}
+  }, [invitationMessages])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rejectionMessages', JSON.stringify(rejectionMessages))
+    } catch {}
+  }, [rejectionMessages])
+
+  useEffect(() => {
+    if (selectedInvitationId) {
+      localStorage.setItem('selectedInvitationId', selectedInvitationId)
+    } else {
+      localStorage.removeItem('selectedInvitationId')
+    }
+  }, [selectedInvitationId])
+
+  useEffect(() => {
+    if (selectedRejectionId) {
+      localStorage.setItem('selectedRejectionId', selectedRejectionId)
+    } else {
+      localStorage.removeItem('selectedRejectionId')
+    }
+  }, [selectedRejectionId])
+  
+  // Обновление brandName в существующих чатах при загрузке (миграция с 'Electronics Store' на 'Amazon Electronics')
+  useEffect(() => {
+    setChats(prevChats => {
+      const hasChanges = prevChats.some(chat => chat.brandName === 'Electronics Store')
+      if (!hasChanges) return prevChats
+      
+      return prevChats.map(chat => {
+        if (chat.brandName === 'Electronics Store') {
+          return {
+            ...chat,
+            brandName: 'Amazon Electronics',
+            messages: chat.messages.map(msg => ({
+              ...msg,
+              brandName: msg.brandName === 'Electronics Store' ? 'Amazon Electronics' : msg.brandName
+            }))
+          }
+        }
+        return chat
+      })
+    })
+  }, [])
+  
   const [activeSearchTerm, setActiveSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0)
@@ -476,6 +604,89 @@ function App() {
     )
   }
 
+  // Обработка отправки сообщения из модального окна "Создать сообщение"
+  const handleSendMessageFromModal = (messageData) => {
+    const { bloggers, message, stores } = messageData
+    if (!bloggers || bloggers.length === 0 || !message) return
+
+    // Если магазины не выбраны, используем пустой массив
+    const selectedStores = stores && stores.length > 0 ? stores : [null]
+
+    const newChats = []
+    const chatUpdates = new Map()
+
+    // Обрабатываем каждую комбинацию блогер + магазин
+    bloggers.forEach((bloggerId) => {
+      const blogger = users.find(u => u.id === bloggerId)
+      if (!blogger) return
+
+      selectedStores.forEach((storeName, storeIndex) => {
+        // Создаем сообщение
+        const newMessage = {
+          id: Date.now() + Math.random() * 10000 + storeIndex * 1000,
+          senderId: currentUser.id,
+          senderName: currentUser.name,
+          content: message.trim(),
+          timestamp: new Date(),
+          read: true,
+          // Добавляем brandName для Amazon чатов
+          ...(storeName && { brandName: storeName })
+        }
+
+        // Ищем существующий чат с этим пользователем, платформой Amazon и тем же магазином
+        const existingChat = chats.find(chat => 
+          chat.type === 'private' && 
+          chat.platform === 'amazon' &&
+          chat.participants.includes(bloggerId) &&
+          chat.participants.includes(currentUser.id) &&
+          chat.participants.length === 2 &&
+          // Проверяем соответствие brandName (или оба null)
+          (chat.brandName === storeName || (!chat.brandName && !storeName))
+        )
+
+        if (existingChat) {
+          // Добавляем обновление для существующего чата
+          chatUpdates.set(existingChat.id, {
+            ...existingChat,
+            messages: [...existingChat.messages, newMessage]
+          })
+        } else {
+          // Создаем новый чат с платформой Amazon
+          const newChat = {
+            id: Date.now() + Math.random() * 100000 + storeIndex * 10000 + bloggerId * 100,
+            name: blogger.name,
+            type: 'private',
+            participants: [currentUser.id, bloggerId],
+            avatar: blogger.avatar,
+            messages: [newMessage],
+            isFavorite: false,
+            isArchived: false,
+            isPinned: false,
+            platform: 'amazon', // Платформа Amazon
+            brandName: storeName, // Название магазина
+            unreadCount: 0
+          }
+
+          newChats.push(newChat)
+        }
+      })
+    })
+
+    // Применяем все изменения одним обновлением состояния
+    setChats(prevChats => {
+      let updatedChats = [...prevChats]
+      
+      // Обновляем существующие чаты
+      updatedChats = updatedChats.map(chat => {
+        const update = chatUpdates.get(chat.id)
+        return update || chat
+      })
+      
+      // Добавляем новые чаты
+      return [...updatedChats, ...newChats]
+    })
+  }
+
   // Создание нового чата
   const createChat = (chatData) => {
     const newChat = {
@@ -547,12 +758,17 @@ function App() {
   }
 
   // Удаление папки для шаблонов
-  const deleteTemplateFolder = (folderId) => {
-    // Переместить все шаблоны из удаляемой папки в папку "Общие" (id: 1)
-    const generalFolderId = 1
-    setTemplates(prev => prev.map(template => 
-      template.folderId === folderId ? { ...template, folderId: generalFolderId } : template
-    ))
+  const deleteTemplateFolder = (folderId, action = 'moveToGeneral') => {
+    if (action === 'moveToGeneral') {
+      // Переместить все шаблоны из удаляемой папки в папку "Общие" (id: 1)
+      const generalFolderId = 1
+      setTemplates(prev => prev.map(template => 
+        template.folderId === folderId ? { ...template, folderId: generalFolderId } : template
+      ))
+    } else if (action === 'deleteAll') {
+      // Удалить все шаблоны из папки
+      setTemplates(prev => prev.filter(template => template.folderId !== folderId))
+    }
     
     // Удалить папку
     setTemplateFolders(prev => prev.filter(folder => folder.id !== folderId))
@@ -588,6 +804,21 @@ function App() {
         ? { ...template, ...updatedData }
         : template
     ))
+  }
+
+  // Копирование шаблона
+  const copyTemplate = (templateId, targetFolderId) => {
+    const originalTemplate = templates.find(template => template.id === templateId)
+    
+    if (originalTemplate) {
+      const newTemplate = {
+        id: Date.now() + Math.random(), // Уникальный ID
+        name: originalTemplate.name,
+        content: originalTemplate.content,
+        folderId: targetFolderId
+      }
+      setTemplates(prev => [...prev, newTemplate])
+    }
   }
 
   // Функции для работы с избранными и архивом
@@ -961,7 +1192,12 @@ function App() {
             instagramAccounts={instagramAccounts}
             tiktokAccounts={tiktokAccounts}
             targetLanguage={targetLanguage}
-            onShowProfileSettings={() => setShowProfileModal(true)}
+            onShowProfileSettings={(tab) => {
+              if (tab) {
+                setActiveTab(tab)
+              }
+              setShowProfileModal(true)
+            }}
             currentUser={currentUser}
             labels={labels}
             groups={groups}
@@ -974,6 +1210,7 @@ function App() {
             onSaveLabelToPreset={saveLabelToPreset}
             getFilteredChatsByGroup={getFilteredChatsByGroup}
             userMatchesGroupFilter={userMatchesGroupFilter}
+            onSendMessageFromModal={handleSendMessageFromModal}
           />
         )}
 
@@ -998,6 +1235,15 @@ function App() {
           searchResults={searchResults}
           currentSearchIndex={currentSearchIndex}
           onNextSearchResult={goToNextSearchResult}
+          invitationMessages={invitationMessages}
+          rejectionMessages={rejectionMessages}
+          selectedInvitationId={selectedInvitationId}
+          selectedRejectionId={selectedRejectionId}
+          selectedPrompt={(() => {
+            if (!aiSelectedPromptId) return null
+            const prompt = aiPrompts.find(p => p.id === aiSelectedPromptId)
+            return prompt || null
+          })()}
           onPreviousSearchResult={goToPreviousSearchResult}
           hasAnyModalOpen={
             showNewChatModal ||
@@ -1035,6 +1281,7 @@ function App() {
           onCreateFolder={() => setShowCreateFolderModal(true)}
           onDeleteFolder={deleteTemplateFolder}
           onUpdateFolder={updateTemplateFolder}
+          onCopyTemplate={copyTemplate}
           targetLanguage={targetLanguage}
         />
 
@@ -1071,11 +1318,34 @@ function App() {
 
         <ProfileSettingsModal
           visible={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
+          onClose={() => {
+            setShowProfileModal(false)
+            setActiveTab('general')
+          }}
           currentUser={currentUser}
           onUpdateProfile={updateUserProfile}
           targetLanguage={targetLanguage}
           onLanguageChange={handleLanguageChange}
+          initialSelectedModel={aiSelectedModel}
+          initialPrompts={aiPrompts}
+          initialSelectedPromptId={aiSelectedPromptId}
+          onSaveAiSettings={({ selectedModel, prompts, selectedPromptId }) => {
+            setAiSelectedModel(selectedModel)
+            setAiPrompts(prompts)
+            setAiSelectedPromptId(selectedPromptId || null)
+          }}
+          initialInvitationMessages={invitationMessages}
+          initialRejectionMessages={rejectionMessages}
+          initialSelectedInvitationId={selectedInvitationId}
+          initialSelectedRejectionId={selectedRejectionId}
+          onSaveMessagesSettings={({ invitations, rejections, selectedInvitationId, selectedRejectionId }) => {
+            setInvitationMessages(invitations)
+            setRejectionMessages(rejections)
+            setSelectedInvitationId(selectedInvitationId || null)
+            setSelectedRejectionId(selectedRejectionId || null)
+          }}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
 
       </Layout>

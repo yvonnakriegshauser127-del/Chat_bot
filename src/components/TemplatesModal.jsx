@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, List, Typography, Card, Button, Input, Form, Space, Popconfirm, Tooltip, Select } from 'antd'
-import { FileTextOutlined, PlusOutlined, DeleteOutlined, EyeOutlined, EditOutlined, FolderOutlined, FolderOpenOutlined } from '@ant-design/icons'
+import { FileTextOutlined, PlusOutlined, DeleteOutlined, EyeOutlined, EditOutlined, FolderOutlined, FolderOpenOutlined, CopyOutlined } from '@ant-design/icons'
 import { useTranslation } from '../hooks/useTranslation'
 
 const { Text } = Typography
@@ -17,6 +17,7 @@ const TemplatesModal = ({
   onCreateFolder,
   onDeleteFolder,
   onUpdateFolder,
+  onCopyTemplate,
   targetLanguage = 'ru' 
 }) => {
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -27,8 +28,14 @@ const TemplatesModal = ({
   const [selectedFolder, setSelectedFolder] = useState(null)
   const [editingFolderId, setEditingFolderId] = useState(null)
   const [editingFolderName, setEditingFolderName] = useState('')
+  const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false)
+  const [folderToDelete, setFolderToDelete] = useState(null)
+  const [showCopyModal, setShowCopyModal] = useState(false)
+  const [templateToCopy, setTemplateToCopy] = useState(null)
+  const [selectedCopyFolder, setSelectedCopyFolder] = useState(null)
   const [form] = Form.useForm()
   const [editForm] = Form.useForm()
+  const [copyForm] = Form.useForm()
   const { t } = useTranslation(targetLanguage)
 
   // Сброс вида на папки при открытии модального окна
@@ -38,6 +45,11 @@ const TemplatesModal = ({
       setSelectedFolder(null)
       setEditingFolderId(null)
       setEditingFolderName('')
+      setShowDeleteFolderModal(false)
+      setFolderToDelete(null)
+      setShowCopyModal(false)
+      setTemplateToCopy(null)
+      setSelectedCopyFolder(null)
     }
   }, [visible])
 
@@ -88,6 +100,32 @@ const TemplatesModal = ({
     setEditingFolderName('')
   }
 
+  const handleDeleteFolderClick = (folder) => {
+    setFolderToDelete(folder)
+    setShowDeleteFolderModal(true)
+  }
+
+  const handleDeleteFolderOnly = () => {
+    if (folderToDelete && onDeleteFolder) {
+      onDeleteFolder(folderToDelete.id, 'moveToGeneral')
+    }
+    setShowDeleteFolderModal(false)
+    setFolderToDelete(null)
+  }
+
+  const handleDeleteFolderAndTemplates = () => {
+    if (folderToDelete && onDeleteFolder) {
+      onDeleteFolder(folderToDelete.id, 'deleteAll')
+    }
+    setShowDeleteFolderModal(false)
+    setFolderToDelete(null)
+  }
+
+  const handleCancelDeleteFolder = () => {
+    setShowDeleteFolderModal(false)
+    setFolderToDelete(null)
+  }
+
   const getTemplatesInFolder = () => {
     if (!selectedFolder) return []
     return templates.filter(template => template.folderId === selectedFolder.id)
@@ -122,6 +160,36 @@ const TemplatesModal = ({
     } catch (error) {
       console.log('Validation failed:', error)
     }
+  }
+
+  const handleCopyTemplate = (template) => {
+    setTemplateToCopy(template)
+    setShowCopyModal(true)
+  }
+
+  const handleCopyTemplateConfirm = async () => {
+    try {
+      const values = await copyForm.validateFields()
+      if (onCopyTemplate && templateToCopy && values.folderIds) {
+        // Копируем шаблон в каждую выбранную папку
+        values.folderIds.forEach(folderId => {
+          onCopyTemplate(templateToCopy.id, folderId)
+        })
+        setShowCopyModal(false)
+        setTemplateToCopy(null)
+        setSelectedCopyFolder(null)
+        copyForm.resetFields()
+      }
+    } catch (error) {
+      console.error('Validation failed:', error)
+    }
+  }
+
+  const handleCancelCopy = () => {
+    setShowCopyModal(false)
+    setTemplateToCopy(null)
+    setSelectedCopyFolder(null)
+    copyForm.resetFields()
   }
 
   return (
@@ -304,22 +372,16 @@ const TemplatesModal = ({
                                       handleEditFolder(folder)
                                     }}
                                   />
-                                  <Popconfirm
-                                    title={t('deleteFolderConfirm')}
-                                    description={t('deleteFolderDescription')}
-                                    onConfirm={() => onDeleteFolder && onDeleteFolder(folder.id)}
-                                    okText={t('yes')}
-                                    cancelText={t('no')}
-                                    okButtonProps={{ danger: true }}
-                                  >
-                                    <Button
-                                      type="text"
-                                      danger
-                                      size="small"
-                                      icon={<DeleteOutlined />}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                  </Popconfirm>
+                                  <Button
+                                    type="text"
+                                    danger
+                                    size="small"
+                                    icon={<DeleteOutlined />}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDeleteFolderClick(folder)
+                                    }}
+                                  />
                                 </>
                               )}
                             </div>
@@ -427,6 +489,17 @@ const TemplatesModal = ({
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditTemplate(template)
+                            }}
+                          />
+                        </Tooltip>
+                        <Tooltip title={t('copyTemplate')}>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<CopyOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleCopyTemplate(template)
                             }}
                           />
                         </Tooltip>
@@ -552,6 +625,70 @@ const TemplatesModal = ({
                 value: folder.id,
                 label: folder.name
               }))}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Модальное окно для подтверждения удаления папки */}
+      <Modal
+        title={t('deleteFolderConfirm')}
+        open={showDeleteFolderModal}
+        onCancel={handleCancelDeleteFolder}
+        footer={[
+          <Button key="cancel" onClick={handleCancelDeleteFolder}>
+            {t('cancel')}
+          </Button>,
+          <Button key="deleteFolder" danger onClick={handleDeleteFolderOnly}>
+            {t('deleteFolder')}
+          </Button>,
+          <Button key="deleteAll" danger onClick={handleDeleteFolderAndTemplates}>
+            {t('deleteFolderAndTemplates')}
+          </Button>
+        ]}
+        width={500}
+      >
+        <div style={{ textAlign: 'left', padding: '20px 0' }}>
+          <Text style={{ fontSize: '16px' }}>
+            {t('selectDesiredAction')}
+          </Text>
+        </div>
+      </Modal>
+
+      {/* Модальное окно для копирования шаблона */}
+      <Modal
+        title={t('copyTemplateTitle')}
+        open={showCopyModal}
+        onCancel={handleCancelCopy}
+        footer={[
+          <Button key="cancel" onClick={handleCancelCopy}>
+            {t('cancel')}
+          </Button>,
+          <Button key="copy" type="primary" onClick={handleCopyTemplateConfirm}>
+            {t('copyToSelectedFolders')}
+          </Button>
+        ]}
+        width={500}
+      >
+        <Form
+          form={copyForm}
+          layout="vertical"
+          requiredMark={false}
+        >
+          <Form.Item 
+            label={t('selectFoldersForCopy')}
+            name="folderIds"
+            rules={[{ required: true, message: t('selectFoldersForCopyMessage') }]}
+          >
+            <Select 
+              mode="multiple"
+              placeholder={t('selectFoldersForCopy')}
+              options={templateFolders
+                .filter(folder => folder.id !== templateToCopy?.folderId)
+                .map(folder => ({
+                  value: folder.id,
+                  label: folder.name
+                }))}
             />
           </Form.Item>
         </Form>

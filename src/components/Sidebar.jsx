@@ -4,11 +4,30 @@ import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlin
 import PresetModal from './PresetModal'
 import UserLabelsModal from './UserLabelsModal'
 import LabelFormModal from './LabelFormModal'
+import WriteMessageModal from './WriteMessageModal'
 import { useTranslation } from '../hooks/useTranslation'
 import './Sidebar.css'
 
 const { Sider } = Layout
 const { Text } = Typography
+
+// Кастомные SVG иконки на основе прикрепленных изображений
+const SingleEnvelopeIcon = ({ style, ...props }) => (
+  <svg
+    width="32"
+    height="32"
+    viewBox="0 0 24 24"
+    style={style}
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <g fill="none" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3.5 7.5L12 13.5L20.5 7.5" />
+    </g>
+  </svg>
+)
+
 
 const Sidebar = ({ 
   chats, 
@@ -44,9 +63,11 @@ const Sidebar = ({
   onDeleteLabel,
   onSaveLabelToPreset,
   getFilteredChatsByGroup,
-  userMatchesGroupFilter
+  userMatchesGroupFilter,
+  onSendMessageFromModal
 }) => {
   const [activeFilters, setActiveFilters] = useState(['all'])
+  const [showWriteMessageModal, setShowWriteMessageModal] = useState(false)
   const [selectedPresets, setSelectedPresets] = useState([])
   const [showPresetModal, setShowPresetModal] = useState(false)
   const [showEditPresetModal, setShowEditPresetModal] = useState(false)
@@ -700,6 +721,12 @@ const Sidebar = ({
     }
   }
 
+  const handleSendMessage = (messageData) => {
+    if (onSendMessageFromModal) {
+      onSendMessageFromModal(messageData)
+    }
+  }
+
   return (
     <Sider width={sidebarWidth} className="sidebar">
       <div className="sidebar-header">
@@ -711,11 +738,50 @@ const Sidebar = ({
             <Button 
               type="text"
               icon={<SettingOutlined />}
-              onClick={onShowProfileSettings}
+              onClick={() => {
+                if (onShowProfileSettings) {
+                  onShowProfileSettings('general')
+                }
+              }}
               size="small"
               title={t('profileSettings')}
             />
           </div>
+      </div>
+      
+      {/* Кнопки между заголовком и поиском */}
+      <div className="sidebar-buttons" style={{ padding: '8px 16px', display: 'flex', gap: '8px', justifyContent: 'flex-start' }}>
+        <Tooltip title={t('writeMessage')}>
+          <Button 
+            type="text"
+            icon={<SingleEnvelopeIcon />}
+            size="small"
+            onClick={() => setShowWriteMessageModal(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              width: '48px',
+              height: '48px',
+              color: '#000'
+            }}
+          />
+        </Tooltip>
+        <Tooltip title={t('massMailing')}>
+          <Button 
+            type="text"
+            icon={<TeamOutlined style={{ fontSize: '32px' }} />}
+            size="small"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              width: '48px',
+              height: '48px',
+              color: '#000'
+            }}
+          />
+        </Tooltip>
       </div>
       
       <div className="search-container">
@@ -1584,6 +1650,16 @@ const Sidebar = ({
             document.addEventListener('mouseup', handleMouseUp)
           }}
         />
+
+      {/* Модальное окно для написания сообщения */}
+      <WriteMessageModal
+        visible={showWriteMessageModal}
+        onClose={() => setShowWriteMessageModal(false)}
+        stores={stores}
+        users={users}
+        targetLanguage={targetLanguage}
+        onSendMessage={handleSendMessage}
+      />
 
     </Sider>
   )

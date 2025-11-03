@@ -6,22 +6,25 @@ import {
   MessageOutlined,
   SendOutlined,
   EyeInvisibleOutlined,
-  PushpinOutlined
+  PushpinOutlined,
+  BulbOutlined
 } from '@ant-design/icons'
 import { translationService } from '../services/translationService'
 import { useTranslation } from '../hooks/useTranslation'
 import { useMessageReadStatus } from '../hooks/useMessageReadStatus'
 import MessageText from './MessageText'
+import SocialLinksAnalysisModal from './SocialLinksAnalysisModal'
 import './StructuredMessage.css'
 
 const { Text, Paragraph } = Typography
 
-const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isFirstUnread = false, hasScrolledToUnread = false, onTogglePinMessage }) => {
+const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, users, onReplyToMessage, onForwardMessage, onScrollToMessage, onMarkAsUnread, onMarkAsRead, activeSearchTerm = '', isFirstUnread = false, hasScrolledToUnread = false, onTogglePinMessage, chatId, onSendMessage, invitationMessages = [], rejectionMessages = [], selectedInvitationId, selectedRejectionId, selectedPrompt }) => {
   const [translatedText, setTranslatedText] = useState('')
   const [translatedLanguage, setTranslatedLanguage] = useState('')
   const [socialLinks, setSocialLinks] = useState([])
   const [isTranslating, setIsTranslating] = useState(false)
   const [showTranslation, setShowTranslation] = useState(false)
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false)
   const { t } = useTranslation(targetLanguage)
 
   // Определяем, является ли сообщение собственным
@@ -83,17 +86,22 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
   const handleShowTranslation = async () => {
     // Если блок перевода скрыт, показываем его и переводим
     if (!showTranslation) {
-      // Если перевода нет или он был сделан на другом языке, переводим заново
-      if ((!translatedText || translatedLanguage !== targetLanguage) && !isTranslating) {
+      // Всегда переводим на актуальный язык из настроек, если перевод отсутствует или был сделан на другом языке
+      const needsTranslation = !translatedText || translatedLanguage !== targetLanguage
+      
+      if (needsTranslation && !isTranslating) {
         setIsTranslating(true)
         try {
+          // Всегда используем актуальный targetLanguage из настроек профиля
           const translation = await translationService.translate(message.content, targetLanguage)
+          // Сохраняем перевод независимо от того, найден он или нет (service сам добавляет префикс, если перевод не найден)
           setTranslatedText(translation)
           setTranslatedLanguage(targetLanguage)
         } catch (error) {
           console.error('Translation error:', error)
-          setTranslatedText(message.content)
-          setTranslatedLanguage(targetLanguage)
+          // При ошибке не устанавливаем переведенный текст, чтобы не показывать оригинал как перевод
+          setTranslatedText('')
+          setTranslatedLanguage('')
         } finally {
           setIsTranslating(false)
         }
@@ -128,6 +136,34 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
   const handleTogglePin = () => {
     if (onTogglePinMessage) {
       onTogglePinMessage(message.id)
+    }
+  }
+
+  const handleAnalyzeSocialLinks = () => {
+    if (socialLinks.length > 0) {
+      setShowAnalysisModal(true)
+    }
+  }
+
+  const handleApproveAnalysis = (analysisResult) => {
+    console.log('Analysis approved:', analysisResult)
+    // Отправляем сообщение приглашения в чат
+    if (onSendMessage && chatId && selectedInvitationId) {
+      const invitationMessage = invitationMessages.find(m => m.id === selectedInvitationId)
+      if (invitationMessage && invitationMessage.text) {
+        onSendMessage(invitationMessage.text.trim())
+      }
+    }
+  }
+
+  const handleRejectAnalysis = () => {
+    console.log('Analysis rejected')
+    // Отправляем сообщение отказа в чат
+    if (onSendMessage && chatId && selectedRejectionId) {
+      const rejectionMessage = rejectionMessages.find(m => m.id === selectedRejectionId)
+      if (rejectionMessage && rejectionMessage.text) {
+        onSendMessage(rejectionMessage.text.trim())
+      }
     }
   }
 
@@ -378,6 +414,45 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
             <div className="message-text">
               <MessageText searchTerm={activeSearchTerm}>{message.content}</MessageText>
             </div>
+            
+            {/* Ссылки на соцсети для оригинального сообщения */}
+            {socialLinks.length > 0 && (
+              <>
+                <div style={{ 
+                  borderTop: '1px solid #e8e8e8', 
+                  marginTop: '12px', 
+                  paddingTop: '12px' 
+                }}>
+                  <div className="info-section">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1 }}>
+                        <Text strong>
+                          <LinkOutlined style={{ marginRight: '4px' }} />
+                          {t('socialLinks')}:
+                        </Text>
+                        <div style={{ marginTop: '4px' }}>
+                          {socialLinks.map((link, index) => (
+                            <Tag key={index} color="blue" style={{ margin: '2px' }}>
+                              <a href={link.url} target="_blank" rel="noopener noreferrer">
+                                {link.platform}
+                              </a>
+                            </Tag>
+                          ))}
+                        </div>
+                      </div>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<BulbOutlined />}
+                        onClick={handleAnalyzeSocialLinks}
+                        style={{ marginLeft: '8px', flexShrink: 0 }}
+                        title={t('analyzeSocialLinks') || 'Анализ ссылок на соцсети'}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Переведенное и структурированное сообщение */}
@@ -396,26 +471,44 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                   {/* Основной перевод */}
                   <div className="translation-section">
                     <Text strong>{t('translation')}</Text>
-                    <Paragraph style={{ margin: '8px 0', whiteSpace: 'pre-wrap' }}>
-                      {translatedText}
-                    </Paragraph>
+                    {translatedText ? (
+                      <Paragraph style={{ margin: '8px 0', whiteSpace: 'pre-wrap' }}>
+                        {translatedText}
+                      </Paragraph>
+                    ) : (
+                      <Paragraph style={{ margin: '8px 0', whiteSpace: 'pre-wrap', color: '#999' }}>
+                        {t('translationNotAvailable') || 'Перевод недоступен'}
+                      </Paragraph>
+                    )}
                   </div>
 
                   {/* Ссылки на соцсети */}
                   {socialLinks.length > 0 && (
                     <div className="info-section">
-                      <Text strong>
-                        <LinkOutlined style={{ marginRight: '4px' }} />
-                        {t('socialLinks')}:
-                      </Text>
-                      <div style={{ marginTop: '4px' }}>
-                        {socialLinks.map((link, index) => (
-                          <Tag key={index} color="blue" style={{ margin: '2px' }}>
-                            <a href={link.url} target="_blank" rel="noopener noreferrer">
-                              {link.platform}
-                            </a>
-                          </Tag>
-                        ))}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1 }}>
+                          <Text strong>
+                            <LinkOutlined style={{ marginRight: '4px' }} />
+                            {t('socialLinks')}:
+                          </Text>
+                          <div style={{ marginTop: '4px' }}>
+                            {socialLinks.map((link, index) => (
+                              <Tag key={index} color="blue" style={{ margin: '2px' }}>
+                                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                                  {link.platform}
+                                </a>
+                              </Tag>
+                            ))}
+                          </div>
+                        </div>
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<BulbOutlined />}
+                          onClick={handleAnalyzeSocialLinks}
+                          style={{ marginLeft: '8px', flexShrink: 0 }}
+                          title={t('analyzeSocialLinks') || 'Анализ ссылок на соцсети'}
+                        />
                       </div>
                     </div>
                   )}
@@ -426,6 +519,17 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
         </div>
       </Card>
       </div>
+
+      {/* Модальное окно для анализа ссылок на соцсети */}
+      <SocialLinksAnalysisModal
+        visible={showAnalysisModal}
+        onClose={() => setShowAnalysisModal(false)}
+        socialLinks={socialLinks}
+        targetLanguage={targetLanguage}
+        onApprove={handleApproveAnalysis}
+        onReject={handleRejectAnalysis}
+        selectedPrompt={selectedPrompt}
+      />
     </div>
   )
 }
