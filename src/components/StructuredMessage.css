@@ -51,12 +51,15 @@
   max-height: 200px;
   overflow-y: auto;
   word-wrap: break-word;
-  word-break: normal;
+  word-break: break-word;
   overflow-wrap: break-word;
+  white-space: pre-wrap;
   hyphens: none;
   -webkit-hyphens: none;
   -moz-hyphens: none;
   -ms-hyphens: none;
+  min-width: 0;
+  width: 100%;
 }
 
 .translation-loading {

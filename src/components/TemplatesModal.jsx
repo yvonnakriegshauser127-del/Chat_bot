@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, List, Typography, Card, Button, Input, Form, Space, Popconfirm, Tooltip, Select } from 'antd'
-import { FileTextOutlined, PlusOutlined, DeleteOutlined, EyeOutlined, EditOutlined, FolderOutlined, FolderOpenOutlined, CopyOutlined } from '@ant-design/icons'
+import { Modal, List, Typography, Card, Button, Input, Form, Space, Popconfirm, Tooltip, Select, Tag } from 'antd'
+import { FileTextOutlined, PlusOutlined, DeleteOutlined, EyeOutlined, EditOutlined, FolderOutlined, FolderOpenOutlined, CopyOutlined, CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from '../hooks/useTranslation'
 
 const { Text } = Typography
@@ -18,6 +18,10 @@ const TemplatesModal = ({
   onDeleteFolder,
   onUpdateFolder,
   onCopyTemplate,
+  defaultTemplate = null,
+  onCreateDefaultTemplate,
+  onUpdateDefaultTemplate,
+  onDeleteDefaultTemplate,
   targetLanguage = 'ru' 
 }) => {
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -33,9 +37,13 @@ const TemplatesModal = ({
   const [showCopyModal, setShowCopyModal] = useState(false)
   const [templateToCopy, setTemplateToCopy] = useState(null)
   const [selectedCopyFolder, setSelectedCopyFolder] = useState(null)
+  const [showDefaultTemplateForm, setShowDefaultTemplateForm] = useState(false)
+  const [showDefaultTemplateEdit, setShowDefaultTemplateEdit] = useState(false)
   const [form] = Form.useForm()
   const [editForm] = Form.useForm()
   const [copyForm] = Form.useForm()
+  const [defaultTemplateForm] = Form.useForm()
+  const [defaultTemplateEditForm] = Form.useForm()
   const { t } = useTranslation(targetLanguage)
 
   // Сброс вида на папки при открытии модального окна
@@ -192,6 +200,51 @@ const TemplatesModal = ({
     copyForm.resetFields()
   }
 
+  const handleCreateDefaultTemplate = async () => {
+    try {
+      const values = await defaultTemplateForm.validateFields()
+      if (onCreateDefaultTemplate) {
+        onCreateDefaultTemplate({
+          content: values.content
+        })
+      }
+      defaultTemplateForm.resetFields()
+      setShowDefaultTemplateForm(false)
+    } catch (error) {
+      console.log('Validation failed:', error)
+    }
+  }
+
+  const handleUpdateDefaultTemplate = async () => {
+    try {
+      const values = await defaultTemplateEditForm.validateFields()
+      if (onUpdateDefaultTemplate && defaultTemplate) {
+        onUpdateDefaultTemplate({
+          content: values.content
+        })
+      }
+      defaultTemplateEditForm.resetFields()
+      setShowDefaultTemplateEdit(false)
+    } catch (error) {
+      console.log('Validation failed:', error)
+    }
+  }
+
+  const handleEditDefaultTemplate = () => {
+    if (defaultTemplate) {
+      defaultTemplateEditForm.setFieldsValue({
+        content: defaultTemplate.content
+      })
+      setShowDefaultTemplateEdit(true)
+    }
+  }
+
+  const handleDeleteDefaultTemplate = () => {
+    if (onDeleteDefaultTemplate && defaultTemplate) {
+      onDeleteDefaultTemplate()
+    }
+  }
+
   return (
     <Modal
       title={t('messageTemplates')}
@@ -208,6 +261,83 @@ const TemplatesModal = ({
         }
       }}
     >
+      {/* Секция дефолтного шаблона */}
+      <Card 
+        style={{ 
+          marginBottom: '16px', 
+          backgroundColor: '#f0f5ff',
+          border: '1px solid #91caff'
+        }}
+        styles={{ body: { padding: '12px' } }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Tooltip title={t('defaultTemplateTooltip')}>
+            <Tag color="blue" style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', cursor: 'help' }}>
+              {t('inviteToCampaign')}
+              {defaultTemplate ? (
+                <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '14px' }} />
+              ) : (
+                <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '14px' }} />
+              )}
+            </Tag>
+          </Tooltip>
+          <Space>
+            {defaultTemplate ? (
+              <>
+                <Tooltip title={t('viewTemplate')}>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EyeOutlined />}
+                    onClick={() => {
+                      setSelectedTemplate({ ...defaultTemplate, isDefault: true })
+                      setShowViewModal(true)
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title={t('editTemplate')}>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={handleEditDefaultTemplate}
+                  />
+                </Tooltip>
+                <Popconfirm
+                  title={t('deleteDefaultTemplateConfirm')}
+                  description={
+                    <div style={{ maxWidth: '550px', whiteSpace: 'normal', lineHeight: '1.5' }}>
+                      {t('deleteDefaultTemplateDescription')}
+                    </div>
+                  }
+                  onConfirm={handleDeleteDefaultTemplate}
+                  okText={t('yes')}
+                  cancelText={t('no')}
+                >
+                  <Tooltip title={t('deleteTemplate')}>
+                    <Button 
+                      type="text" 
+                      danger 
+                      icon={<DeleteOutlined />}
+                      size="small"
+                    />
+                  </Tooltip>
+                </Popconfirm>
+              </>
+            ) : (
+              <Tooltip title={t('createTemplate')}>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => setShowDefaultTemplateForm(true)}
+                />
+              </Tooltip>
+            )}
+          </Space>
+        </div>
+      </Card>
+
       <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
         <Button 
           type="primary" 
@@ -550,11 +680,13 @@ const TemplatesModal = ({
       >
         {selectedTemplate && (
           <div>
-            <div style={{ marginBottom: '16px' }}>
-              <Text strong style={{ fontSize: '16px' }}>
-                {selectedTemplate.name}
-              </Text>
-            </div>
+            {!selectedTemplate.isDefault && (
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong style={{ fontSize: '16px' }}>
+                  {selectedTemplate.name}
+                </Text>
+              </div>
+            )}
             <div style={{ 
               background: '#f5f5f5', 
               padding: '16px', 
@@ -689,6 +821,84 @@ const TemplatesModal = ({
                   value: folder.id,
                   label: folder.name
                 }))}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Модальное окно для создания дефолтного шаблона */}
+      <Modal
+        title={t('createTemplate')}
+        open={showDefaultTemplateForm}
+        onCancel={() => {
+          setShowDefaultTemplateForm(false)
+          defaultTemplateForm.resetFields()
+        }}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setShowDefaultTemplateForm(false)
+            defaultTemplateForm.resetFields()
+          }}>
+            {t('cancel')}
+          </Button>,
+          <Button key="create" type="primary" onClick={handleCreateDefaultTemplate}>
+            {t('createTemplate')}
+          </Button>
+        ]}
+        width={600}
+      >
+        <Form
+          form={defaultTemplateForm}
+          layout="vertical"
+          requiredMark={false}
+        >
+          <Form.Item 
+            label={t('templateText')}
+            name="content"
+            rules={[{ required: true, message: t('enterTemplateText') }]}
+          >
+            <Input.TextArea 
+              placeholder={t('enterTemplateText')}
+              rows={6}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Модальное окно для редактирования дефолтного шаблона */}
+      <Modal
+        title={t('editTemplateTitle')}
+        open={showDefaultTemplateEdit}
+        onCancel={() => {
+          setShowDefaultTemplateEdit(false)
+          defaultTemplateEditForm.resetFields()
+        }}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setShowDefaultTemplateEdit(false)
+            defaultTemplateEditForm.resetFields()
+          }}>
+            {t('cancel')}
+          </Button>,
+          <Button key="save" type="primary" onClick={handleUpdateDefaultTemplate}>
+            {t('saveChanges')}
+          </Button>
+        ]}
+        width={600}
+      >
+        <Form
+          form={defaultTemplateEditForm}
+          layout="vertical"
+          requiredMark={false}
+        >
+          <Form.Item 
+            label={t('templateText')}
+            name="content"
+            rules={[{ required: true, message: t('enterTemplateText') }]}
+          >
+            <Input.TextArea 
+              placeholder={t('enterTemplateText')}
+              rows={6}
             />
           </Form.Item>
         </Form>

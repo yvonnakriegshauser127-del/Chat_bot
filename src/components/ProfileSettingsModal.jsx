@@ -778,6 +778,7 @@ const ProfileSettingsModal = ({
                       setPromptText('')
                     }}
                     title={t('aiCreatePrompt') || 'Создать промпт'}
+                    style={{ height: '32px' }}
                   >
                     {t('aiCreatePrompt') || 'Создать промпт'}
                   </Button>
@@ -892,6 +893,7 @@ const ProfileSettingsModal = ({
                         setInvitationText('')
                       }}
                       title={t('createMessage') || 'Создать сообщение'}
+                      style={{ height: '32px' }}
                     >
                       {t('createMessage') || 'Создать сообщение'}
                     </Button>
@@ -994,6 +996,7 @@ const ProfileSettingsModal = ({
                         setRejectionText('')
                       }}
                       title={t('createMessage') || 'Создать сообщение'}
+                      style={{ height: '32px' }}
                     >
                       {t('createMessage') || 'Создать сообщение'}
                     </Button>

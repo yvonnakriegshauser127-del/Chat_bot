@@ -22,8 +22,19 @@ export const testUsers = [
   { id: 11, name: 'Amazon Support', avatar: '🛒', labels: ['support', 'sales'] },
   { id: 12, name: 'TikTok Creator', avatar: '🎬', labels: ['marketing', 'sales'] },
   { id: 13, name: 'NYCHKA Store', avatar: '🏪', labels: ['sales'] },
-  { id: 14, name: 'TechGear Pro', avatar: '⚙️', labels: ['sales'] }
+  { id: 14, name: 'TechGear Pro', avatar: '⚙️', labels: ['sales'] },
+  { id: 15, name: 'Михаил Кампанев', avatar: '👨‍💼', labels: ['work', 'marketing'] } // Участвует в кампаниях от нескольких магазинов
 ]
+
+// Структура данных: участники кампаний по магазинам
+// Ключ - название магазина, значение - массив ID пользователей, участвовавших в кампании от этого магазина
+export const campaignParticipants = {
+  'Amazon Electronics': [2, 4, 5, 15], // Анна Петрова, Мария Козлова, Алексей Волков, Михаил Кампанев
+  'Fashion Boutique': [3, 6, 15], // Иван Сидоров, Елена Смирнова, Михаил Кампанев
+  'Home & Garden': [7, 8, 15], // Дмитрий Новиков, Ольга Васильева, Михаил Кампанев
+  'Sports & Outdoors': [9, 10, 15], // Сергей Морозов, Татьяна Лебедева, Михаил Кампанев
+  'Books & Media': [2, 6, 15] // Анна Петрова, Елена Смирнова, Михаил Кампанев
+}
 
 // Группы как фильтры (наборы условий для отображения пользователей)
 export const groupFilters = [

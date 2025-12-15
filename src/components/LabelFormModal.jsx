@@ -176,10 +176,10 @@ const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValue
           />
         </Form.Item>
 
-        <Form.Item label={t('selectColor')}>
+        <Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>{t('selectColor')}</div>
+              <div style={{ marginBottom: '8px', fontWeight: 'bold', lineHeight: '22px', fontSize: '14px', height: '22px', display: 'flex', alignItems: 'center' }}>{t('selectColor')}</div>
           <div style={{ 
             border: '1px solid #d9d9d9',
             borderRadius: '6px',
@@ -512,7 +512,7 @@ const LabelFormModal = ({ visible, onClose, onSave, targetLanguage, initialValue
               </div>
             </Col>
             <Col span={12}>
-              <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>{t('selectTextColor')}</div>
+              <div style={{ marginBottom: '8px', fontWeight: 'bold', lineHeight: '22px', fontSize: '14px', height: '22px', display: 'flex', alignItems: 'center' }}>{t('selectTextColor')}</div>
               <div style={{ 
                 border: '1px solid #d9d9d9',
                 borderRadius: '6px',

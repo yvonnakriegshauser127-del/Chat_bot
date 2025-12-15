@@ -5,15 +5,16 @@ const MessageText = ({ children, style = {}, searchTerm = '' }) => {
   const isShortMessage = typeof children === 'string' && children.length < 20
   
   const textStyle = {
-    wordBreak: 'normal',
+    wordBreak: 'break-word',
     overflowWrap: 'break-word',
     hyphens: 'none',
     WebkitHyphens: 'none',
     MozHyphens: 'none',
     msHyphens: 'none',
     // Применяем nowrap только для коротких сообщений
-    whiteSpace: isShortMessage ? 'nowrap' : 'normal',
-    display: 'inline',
+    whiteSpace: isShortMessage ? 'nowrap' : 'pre-wrap',
+    display: 'block',
+    width: '100%',
     ...style
   }
 

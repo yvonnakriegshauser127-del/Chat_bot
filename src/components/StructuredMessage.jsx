@@ -48,8 +48,9 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
       .ant-typography span,
       .message-text,
       .message-text * {
-        word-break: normal !important;
+        word-break: break-word !important;
         overflow-wrap: break-word !important;
+        white-space: pre-wrap !important;
         hyphens: none !important;
         -webkit-hyphens: none !important;
         -moz-hyphens: none !important;
@@ -59,6 +60,13 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
       /* Для коротких сообщений предотвращаем переносы */
       .message-text:has(span[style*="white-space: nowrap"]) {
         white-space: nowrap !important;
+      }
+      
+      /* Обеспечиваем перенос длинных слов */
+      .message-text span {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
       }
     `
     document.head.appendChild(style)
@@ -266,7 +274,7 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
               <MessageText searchTerm={activeSearchTerm}>{message.content}</MessageText>
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '4px' }}>
               <Button 
                 type="text" 
                 size="small"
@@ -278,7 +286,10 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                   height: '14px',
                   width: '14px',
                   minWidth: '14px',
-                  padding: '0'
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               />
               <Button 
@@ -291,8 +302,11 @@ const StructuredMessage = ({ id, message, targetLanguage = 'ru', currentUser, us
                   minWidth: 'auto',
                   padding: '2px 4px',
                   fontSize: '11px',
-                  height: 'auto',
-                  lineHeight: '1.2'
+                  height: '14px',
+                  lineHeight: '1.2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               />
             </div>

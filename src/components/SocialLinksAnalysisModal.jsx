@@ -24,7 +24,6 @@ const SocialLinksAnalysisModal = ({
   useEffect(() => {
     // Запускаем анализ только когда модальное окно открывается впервые
     if (visible && !previousVisibleRef.current && socialLinks.length > 0) {
-      console.log('Starting analysis with links:', socialLinks)
       // Сбрасываем состояние при открытии
       setAnalysisResult(null)
       setError(null)
@@ -34,8 +33,6 @@ const SocialLinksAnalysisModal = ({
       // Отправляем запрос на анализ с выбранным промптом
       aiService.analyzeSocialLinks(socialLinks, targetLanguage, selectedPrompt)
         .then((result) => {
-          console.log('Analysis result received:', result)
-          console.log('Setting analysis result, isAnalyzing will be false')
           setAnalysisResult(result)
           setIsAnalyzing(false)
         })
@@ -46,7 +43,6 @@ const SocialLinksAnalysisModal = ({
         })
     } else if (!visible && previousVisibleRef.current) {
       // Сбрасываем состояние при закрытии
-      console.log('Modal closed, resetting state')
       setAnalysisResult(null)
       setError(null)
       setIsAnalyzing(false)
@@ -97,8 +93,6 @@ const SocialLinksAnalysisModal = ({
       ]}
     >
       {(() => {
-        console.log('Rendering modal content:', { isAnalyzing, hasResult: !!analysisResult, hasError: !!error })
-        
         if (isAnalyzing) {
           return (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>

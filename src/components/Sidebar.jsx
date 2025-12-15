@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Layout, Input, Button, List, Avatar, Typography, Badge, Collapse, Tooltip, Dropdown, Space, Tag, Modal, Popconfirm } from 'antd'
-import { SearchOutlined, PlusOutlined, MessageOutlined, TeamOutlined, StarOutlined, StarFilled, FileZipOutlined, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, UpOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined, TagOutlined, MoreOutlined, EditOutlined } from '@ant-design/icons'
+import { SearchOutlined, PlusOutlined, MessageOutlined, StarOutlined, StarFilled, FileZipOutlined, BellOutlined, AmazonOutlined, InstagramOutlined, MailOutlined, TikTokOutlined, DownOutlined, UpOutlined, DeleteOutlined, PushpinOutlined, SettingOutlined, ExclamationCircleOutlined, TagOutlined, MoreOutlined, EditOutlined } from '@ant-design/icons'
 import PresetModal from './PresetModal'
 import UserLabelsModal from './UserLabelsModal'
 import LabelFormModal from './LabelFormModal'
@@ -14,8 +14,8 @@ const { Text } = Typography
 // Кастомные SVG иконки на основе прикрепленных изображений
 const SingleEnvelopeIcon = ({ style, ...props }) => (
   <svg
-    width="32"
-    height="32"
+    width="24"
+    height="24"
     viewBox="0 0 24 24"
     style={style}
     xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +64,8 @@ const Sidebar = ({
   onSaveLabelToPreset,
   getFilteredChatsByGroup,
   userMatchesGroupFilter,
-  onSendMessageFromModal
+  onSendMessageFromModal,
+  campaignParticipants = {}
 }) => {
   const [activeFilters, setActiveFilters] = useState(['all'])
   const [showWriteMessageModal, setShowWriteMessageModal] = useState(false)
@@ -737,7 +738,7 @@ const Sidebar = ({
           <div style={{ display: 'flex', gap: '4px' }}>
             <Button 
               type="text"
-              icon={<SettingOutlined />}
+              icon={<SettingOutlined style={{ fontSize: '18px' }} />}
               onClick={() => {
                 if (onShowProfileSettings) {
                   onShowProfileSettings('general')
@@ -757,21 +758,6 @@ const Sidebar = ({
             icon={<SingleEnvelopeIcon />}
             size="small"
             onClick={() => setShowWriteMessageModal(true)}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              width: '48px',
-              height: '48px',
-              color: '#000'
-            }}
-          />
-        </Tooltip>
-        <Tooltip title={t('massMailing')}>
-          <Button 
-            type="text"
-            icon={<TeamOutlined style={{ fontSize: '32px' }} />}
-            size="small"
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -1043,7 +1029,8 @@ const Sidebar = ({
                     color: '#1890ff',
                     fontSize: '12px',
                     height: '20px',
-                    padding: '0 4px'
+                    padding: '0 4px',
+                    border: '1px solid #8ac7ff'
                   }}
                   title={t('createNewLabel')}
                 />
@@ -1249,7 +1236,11 @@ const Sidebar = ({
                               </Space>
                             </Popconfirm>
                           ),
-                          onClick: (e) => e.preventDefault() // Предотвращаем закрытие меню
+                          onClick: ({ domEvent }) => {
+                            if (domEvent) {
+                              domEvent.preventDefault()
+                            }
+                          } // Предотвращаем закрытие меню
                         }
                       ]
                     }}
@@ -1369,7 +1360,7 @@ const Sidebar = ({
                 <List.Item
               key={chat.id}
                   className={`chat-item ${currentChatId === chat.id ? 'active' : ''} ${chat.isArchived ? 'archived' : ''}`}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', maxWidth: '100%', overflow: 'hidden' }}
                   onClick={() => onChatSelect(chat.id, searchTerm)}
                 >
                   <List.Item.Meta
@@ -1409,12 +1400,14 @@ const Sidebar = ({
             </div>
                     }
                     description={
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', minWidth: 0, maxWidth: '100%' }}>
                         <Text
                           type="secondary" 
                           style={{ 
                             fontSize: '12px', 
                             flex: 1,
+                            minWidth: 0,
+                            maxWidth: '100%',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
@@ -1659,6 +1652,7 @@ const Sidebar = ({
         users={users}
         targetLanguage={targetLanguage}
         onSendMessage={handleSendMessage}
+        campaignParticipants={campaignParticipants}
       />
 
     </Sider>

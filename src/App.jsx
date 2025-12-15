@@ -9,7 +9,7 @@ import CreateFolderModal from './components/CreateFolderModal'
 import GroupParticipantsModal from './components/GroupParticipantsModal'
 import ForwardMessageModal from './components/ForwardMessageModal'
 import ProfileSettingsModal from './components/ProfileSettingsModal'
-import { testUsers, testTemplates, initialChats, testStores, testEmails, testInstagramAccounts, testTikTokAccounts, testPresets, availableLabels, groupFilters } from './data/testData'
+import { testUsers, testTemplates, initialChats, testStores, testEmails, testInstagramAccounts, testTikTokAccounts, testPresets, availableLabels, groupFilters, campaignParticipants } from './data/testData'
 import { localStorageUtils } from './utils/localStorage'
 import './App.css'
 
@@ -22,6 +22,14 @@ function App() {
     { id: 1, name: 'Общие', createdAt: new Date() },
     { id: 2, name: 'Работа', createdAt: new Date() }
   ])
+  const [defaultTemplate, setDefaultTemplate] = useState(() => {
+    try {
+      const raw = localStorage.getItem('defaultTemplate')
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })
   const [labels, setLabels] = useState(availableLabels)
   const [groups, setGroups] = useState(groupFilters)
   const [selectedGroupFilter, setSelectedGroupFilter] = useState(null)
@@ -606,70 +614,63 @@ function App() {
 
   // Обработка отправки сообщения из модального окна "Создать сообщение"
   const handleSendMessageFromModal = (messageData) => {
-    const { bloggers, message, stores } = messageData
-    if (!bloggers || bloggers.length === 0 || !message) return
-
-    // Если магазины не выбраны, используем пустой массив
-    const selectedStores = stores && stores.length > 0 ? stores : [null]
+    const { storeUserPairs, message } = messageData
+    if (!storeUserPairs || storeUserPairs.length === 0 || !message) return
 
     const newChats = []
     const chatUpdates = new Map()
 
-    // Обрабатываем каждую комбинацию блогер + магазин
-    bloggers.forEach((bloggerId) => {
+    // Обрабатываем каждую связку магазин-пользователь
+    storeUserPairs.forEach(({ storeName, bloggerId }, index) => {
       const blogger = users.find(u => u.id === bloggerId)
       if (!blogger) return
+      // Создаем сообщение
+      const newMessage = {
+        id: Date.now() + Math.random() * 10000 + index * 1000,
+        senderId: currentUser.id,
+        senderName: currentUser.name,
+        content: message.trim(),
+        timestamp: new Date(),
+        read: true,
+        // Добавляем brandName для Amazon чатов
+        ...(storeName && { brandName: storeName })
+      }
 
-      selectedStores.forEach((storeName, storeIndex) => {
-        // Создаем сообщение
-        const newMessage = {
-          id: Date.now() + Math.random() * 10000 + storeIndex * 1000,
-          senderId: currentUser.id,
-          senderName: currentUser.name,
-          content: message.trim(),
-          timestamp: new Date(),
-          read: true,
-          // Добавляем brandName для Amazon чатов
-          ...(storeName && { brandName: storeName })
+      // Ищем существующий чат с этим пользователем, платформой Amazon и тем же магазином
+      const existingChat = chats.find(chat => 
+        chat.type === 'private' && 
+        chat.platform === 'amazon' &&
+        chat.participants.includes(bloggerId) &&
+        chat.participants.includes(currentUser.id) &&
+        chat.participants.length === 2 &&
+        // Проверяем соответствие brandName (или оба null)
+        (chat.brandName === storeName || (!chat.brandName && !storeName))
+      )
+
+      if (existingChat) {
+        // Добавляем обновление для существующего чата
+        chatUpdates.set(existingChat.id, {
+          ...existingChat,
+          messages: [...existingChat.messages, newMessage]
+        })
+      } else {
+        // Создаем новый чат с платформой Amazon для каждой связки магазин-пользователь
+        const newChat = {
+          id: Date.now() + Math.random() * 100000 + index * 10000 + bloggerId * 100,
+          name: blogger.name,
+          type: 'private',
+          participants: [currentUser.id, bloggerId],
+          avatar: blogger.avatar,
+          messages: [newMessage],
+          isFavorite: false,
+          isArchived: false,
+          isPinned: false,
+          platform: 'amazon',
+          brandName: storeName,
+          unreadCount: 0
         }
-
-        // Ищем существующий чат с этим пользователем, платформой Amazon и тем же магазином
-        const existingChat = chats.find(chat => 
-          chat.type === 'private' && 
-          chat.platform === 'amazon' &&
-          chat.participants.includes(bloggerId) &&
-          chat.participants.includes(currentUser.id) &&
-          chat.participants.length === 2 &&
-          // Проверяем соответствие brandName (или оба null)
-          (chat.brandName === storeName || (!chat.brandName && !storeName))
-        )
-
-        if (existingChat) {
-          // Добавляем обновление для существующего чата
-          chatUpdates.set(existingChat.id, {
-            ...existingChat,
-            messages: [...existingChat.messages, newMessage]
-          })
-        } else {
-          // Создаем новый чат с платформой Amazon
-          const newChat = {
-            id: Date.now() + Math.random() * 100000 + storeIndex * 10000 + bloggerId * 100,
-            name: blogger.name,
-            type: 'private',
-            participants: [currentUser.id, bloggerId],
-            avatar: blogger.avatar,
-            messages: [newMessage],
-            isFavorite: false,
-            isArchived: false,
-            isPinned: false,
-            platform: 'amazon', // Платформа Amazon
-            brandName: storeName, // Название магазина
-            unreadCount: 0
-          }
-
-          newChats.push(newChat)
-        }
-      })
+        newChats.push(newChat)
+      }
     })
 
     // Применяем все изменения одним обновлением состояния
@@ -818,6 +819,47 @@ function App() {
         folderId: targetFolderId
       }
       setTemplates(prev => [...prev, newTemplate])
+    }
+  }
+
+  // Создание дефолтного шаблона
+  const createDefaultTemplate = (templateData) => {
+    const newDefaultTemplate = {
+      id: 'default-' + Date.now(),
+      content: templateData.content,
+      isDefault: true
+    }
+    setDefaultTemplate(newDefaultTemplate)
+    try {
+      localStorage.setItem('defaultTemplate', JSON.stringify(newDefaultTemplate))
+    } catch (error) {
+      console.error('Failed to save default template to localStorage:', error)
+    }
+  }
+
+  // Обновление дефолтного шаблона
+  const updateDefaultTemplate = (updatedData) => {
+    if (defaultTemplate) {
+      const updated = {
+        ...defaultTemplate,
+        content: updatedData.content
+      }
+      setDefaultTemplate(updated)
+      try {
+        localStorage.setItem('defaultTemplate', JSON.stringify(updated))
+      } catch (error) {
+        console.error('Failed to update default template in localStorage:', error)
+      }
+    }
+  }
+
+  // Удаление дефолтного шаблона
+  const deleteDefaultTemplate = () => {
+    setDefaultTemplate(null)
+    try {
+      localStorage.removeItem('defaultTemplate')
+    } catch (error) {
+      console.error('Failed to remove default template from localStorage:', error)
     }
   }
 
@@ -1211,6 +1253,7 @@ function App() {
             getFilteredChatsByGroup={getFilteredChatsByGroup}
             userMatchesGroupFilter={userMatchesGroupFilter}
             onSendMessageFromModal={handleSendMessageFromModal}
+            campaignParticipants={campaignParticipants}
           />
         )}
 
@@ -1282,6 +1325,10 @@ function App() {
           onDeleteFolder={deleteTemplateFolder}
           onUpdateFolder={updateTemplateFolder}
           onCopyTemplate={copyTemplate}
+          defaultTemplate={defaultTemplate}
+          onCreateDefaultTemplate={createDefaultTemplate}
+          onUpdateDefaultTemplate={updateDefaultTemplate}
+          onDeleteDefaultTemplate={deleteDefaultTemplate}
           targetLanguage={targetLanguage}
         />
 

@@ -167,8 +167,22 @@
 
 .chat-list {
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1; /* Занимает оставшееся место, исключая наложения */
   min-height: 0; /* Позволяет списку сжиматься внутри flex-контейнера */
+  max-width: 100%;
+  width: 100%;
+}
+
+.chat-list .ant-list {
+  max-width: 100%;
+  width: 100%;
+}
+
+.chat-list .ant-list-item {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Кастомный скроллбар для списка чатов */
@@ -200,12 +214,19 @@
   transition: background-color 0.3s;
   min-height: 60px;
   padding: 8px 16px !important;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .chat-item .ant-list-item-meta {
   align-items: flex-start;
   width: 100%;
+  max-width: 100%;
   margin-bottom: 0;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .chat-item .ant-list-item-meta-title {
@@ -228,6 +249,7 @@
   gap: 8px;
   overflow: hidden;
   width: 100%;
+  min-width: 0;
 }
 
 /* Стили для текста чата */
@@ -243,11 +265,13 @@
 /* Стили для последнего сообщения */
 .chat-item .ant-list-item-meta-description .ant-typography {
   flex: 1 !important;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
   margin-right: 8px;
+  word-break: break-word;
 }
 
 /* Стили для кнопок действий */
